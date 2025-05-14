@@ -23,28 +23,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pylint black
+          pip install pylint black pytest
       
       - name: Run linters
         run: |
           pylint *.py
           black --check *.py
-
-  tests:
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          pip install pytest
 
       - name: Run tests
         run: |

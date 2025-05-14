@@ -2,34 +2,35 @@
 This is a simple API module that provides basic arithmetic operations and a greeting function.
 """
 
-"""
-This function returns Hello World!.
-"""
-def helloWorld():
+def hello_world():
+    """
+    This function returns Hello World!.
+    """
     return "Hello, World!"
 
-"""
-This function adds two numbers.
-"""
 def add(a, b):
+    """
+    This function adds two numbers.
+    """
     return a + b
 
-"""
-This function subtracts two numbers.
-"""
 def subtract(a, b):
+    """
+    This function subtracts two numbers.
+    """
     return a - b
 
-"""
-This function multiplies two numbers.
-"""
-def multiply(a, b):
+def multiply(a, b): 
+    """
+    This function multiplies two numbers.
+    """
     return a * b
 
-"""
-This function divides two numbers.
-"""
 def divide(a, b):
+    """
+    This function divides two numbers.
+    It checks for division by zero and returns an error message if so.
+    """
     if b == 0:
         return "Error: Division by zero"
     return a / b
