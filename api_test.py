@@ -3,13 +3,13 @@ This is a test file for the API.
 It contains unit tests for the functions defined in the API module.
 """
 
-from api import helloWorld, add, subtract, multiply, divide
+from api import hello_world, add, subtract, multiply, divide
 
 def test_hello_world():
     """
-    This function tests the helloWorld function.
+    This function tests the hello_world function.
     """
-    assert helloWorld() == "Hello, World!"
+    assert hello_world() == "Hello, World!"
 
 def test_add():
     """
@@ -22,7 +22,7 @@ def test_add():
     assert add(1, 8) == 9
     assert add(3, 10) == 13
 
-def test_subtract(): 
+def test_subtract():
     """
     This function tests the subtract function.
     It checks if the subtraction of two numbers is correct.
