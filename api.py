@@ -1,4 +1,6 @@
-### This is a simple API module that provides basic arithmetic operations and a greeting function.
+"""
+This is a simple API module that provides basic arithmetic operations and a greeting function.
+"""
 
 """
 This function returns Hello World!.
