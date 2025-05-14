@@ -5,11 +5,13 @@ It contains unit tests for the functions defined in the API module.
 
 from api import hello_world, add, subtract, multiply, divide
 
+
 def test_hello_world():
     """
     This function tests the hello_world function.
     """
     assert hello_world() == "Hello, World!"
+
 
 def test_add():
     """
@@ -21,6 +23,7 @@ def test_add():
     assert add(-2, -1) == -3
     assert add(1, 8) == 9
     assert add(3, 10) == 13
+
 
 def test_subtract():
     """
@@ -34,6 +37,7 @@ def test_subtract():
     assert subtract(1, 8) == -7
     assert subtract(3, 10) == -7
 
+
 def test_multiply():
     """
     This function tests the multiply function.
@@ -46,6 +50,7 @@ def test_multiply():
     assert multiply(3, 10) == 30
     assert multiply(-3, -10) == 30
     assert multiply(-3, 10) == -30
+
 
 def test_divide():
     """
