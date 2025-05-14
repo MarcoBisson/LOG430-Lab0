@@ -1,0 +1,6 @@
+__pycache__
+.pytest_cache
+.git
+*.pyc
+*.pyo
+api_test.py
