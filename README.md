@@ -86,8 +86,7 @@ docker-compose up --build
 
 ### 6. Pipeline CI/CD
 
-La pipeline CI/CD (lint, tests, build et push) s'exécute automatiquement à chaque push, pull request ou déclenchement manuel.  
-Voici le diagramme Mermaid détaillant chaque étape de la pipeline :
+La pipeline CI/CD (lint, tests, build et push) s'exécute automatiquement à chaque push, pull request ou déclenchement manuel. Voici le diagramme Mermaid détaillant chaque étape de la pipeline :
 
 <details>
 <summary>Afficher le graphique des steps du CI/CD avec Mermaid</summary>
