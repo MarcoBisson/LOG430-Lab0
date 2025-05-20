@@ -23,7 +23,7 @@ LOG430-Lab0/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml        # Pipeline GitHub Actions (lint, test, build, push)
-├── screenshots           # Screenshots
+├── screenshots/          # Screenshots
 ├── Dockerfile            # Image Docker de l’application
 ├── docker-compose.yml    # Orchestration multi-conteneurs
 ├── .dockerignore         # Fichiers à ignorer lors du build Docker
