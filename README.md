@@ -17,7 +17,7 @@ Ce projet est une application minimale (ex : affichage "Hello, World!", additi
 LOG430-Lab0/
 ├── app/                  # Code source principal Python
 │   ├── main.py           # Code exécutant les fonctions de l'API
-|   └── api.py            # Application minimaliste (Hello World et opération mathématique de base)
+|   └── api.py            # Application minimaliste (Hello World et opérations mathématiques de base)
 ├── tests/
 |   └── api_test.py       # Code tests unitaires pour l'API
 ├── .github/
