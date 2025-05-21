@@ -36,6 +36,7 @@ coverage/
 # Prisma (si tu utilises SQLite en dev)
 /*.sqlite
 /prisma/dev.db
+/generated/
 
 # IDEs & OS files
 .vscode/
