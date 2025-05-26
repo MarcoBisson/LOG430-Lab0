@@ -10,4 +10,4 @@ Il faut tout d'abord ajouter un .env pour la base de données avec `DATABASE_URL
 Exécutez la commande `npx prisma studio`, cette commande permet d'afficher la base de données sur le web.
 
 ## Pour réinitialiser la base de données
-Exécutez la commande `npx prisma migrate reset`
+Exécutez la commande `npx prisma migrate reset [migration]`

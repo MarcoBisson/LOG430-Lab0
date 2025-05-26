@@ -14,8 +14,22 @@ datasource db {
 }
 
 model Product {
-  id    Int     @id @default(autoincrement())
-  name  String
-  category String
-  quantity Int
+  id        Int     @id @default(autoincrement())
+  name      String
+  category  String?
+  price     Float
+  quantity  Int     @default(0)
+  sales     Sale[]
 }
+
+model Sale {
+  id         Int      @id @default(autoincrement())
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+  quantity   Int
+  total      Float
+  createdAt  DateTime @default(now())
+  returned   Boolean  @default(false)
+  returnedAt DateTime?
+}
+
