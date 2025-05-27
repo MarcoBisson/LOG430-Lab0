@@ -14,11 +14,12 @@ generator client {
 }
 
 model Product {
-  id     Int     @id @default(autoincrement())
-  name   String
-  price  Float
-  stock  Int
-  sales  SaleItem[]
+  id        Int         @id @default(autoincrement())
+  name      String
+  price     Float
+  stock     Int
+  category  String?
+  sales     SaleItem[]
 }
 
 model Sale {

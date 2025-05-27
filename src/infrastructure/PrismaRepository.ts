@@ -31,4 +31,39 @@ export class PrismaRepository {
       data: { stock: { decrement: qty } }
     });
   }
+
+  async findProductsByName(name: string): Promise<Product[]> {
+    return prisma.product.findMany({
+      where: { name: { contains: name, mode: "insensitive" } }
+    });
+  }
+
+  // Recherche par catégorie (égalité)
+  async findProductsByCategory(category: string): Promise<Product[]> {
+    return prisma.product.findMany({
+      where: { category }
+    });
+  }
+
+  // Retourne une vente avec ses items
+  async getSaleById(id: number): Promise<(Sale & { items: SaleItem[] }) | null> {
+    return prisma.sale.findUnique({
+      where: { id },
+      include: { items: true }
+    });
+  }
+
+  // Supprime la vente et ses items
+  async deleteSale(id: number): Promise<void> {
+    await prisma.saleItem.deleteMany({ where: { saleId: id } });
+    await prisma.sale.delete({ where: { id } });
+  }
+
+  // Incrémente le stock
+  async incrementStock(productId: number, qty: number): Promise<void> {
+    await prisma.product.update({
+      where: { id: productId },
+      data: { stock: { increment: qty } }
+    });
+  }
 }
