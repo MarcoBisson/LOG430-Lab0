@@ -51,6 +51,7 @@ async function main() {
   }
 }
 
+// Fonction pour ajouter un produit
 async function handleAddProduct() {
   const answers = await inquirer.prompt([
     { type: 'input', name: 'name', message: 'Nom du produit :' },
@@ -71,18 +72,19 @@ async function handleAddProduct() {
   ]);
 
   try {
-    const prod = await productService.addProduct(
+    const product = await productService.addProduct(
       answers.name,
       answers.price,
       answers.stock,
       answers.category || undefined,
     );
-    console.log('Produit créé :', prod);
+    console.log('Produit créé :', product);
   } catch (err: any) {
     console.error('Erreur lors de la création :', err.message);
   }
 }
 
+// Fonction pour rechercher un produit
 async function handleSearch() {
   const { criterion } = await inquirer.prompt({
     type: 'list',
@@ -125,6 +127,7 @@ async function handleSearch() {
   }
 }
 
+// Fonction pour enregistrer une vente
 async function handleSale() {
   const items: CartItem[] = [];
   let addMore = true;
@@ -149,6 +152,7 @@ async function handleSale() {
   }
 }
 
+// Fonction pour gérer les retours
 async function handleReturn() {
   const { saleId } = await inquirer.prompt({
     type: 'number',
@@ -162,6 +166,7 @@ async function handleReturn() {
   }
 }
 
+// Fonction pour consulter l'état du stock
 async function handleStock() {
   const products = await inventoryService.listStock();
   console.table(products.map(p => ({

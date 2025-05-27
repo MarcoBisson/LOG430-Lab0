@@ -4,6 +4,7 @@ import type { Product } from '@prisma/client';
 export class ProductService {
     constructor(private readonly repo: PrismaRepository) { }
 
+    // Ajoute un produit
     async addProduct(
         name: string,
         price: number,

@@ -13,14 +13,17 @@ export class PrismaRepository {
     return prisma.product.create({ data });
   }
 
+  // Trouve un produit par son ID
   async findProductById(id: number): Promise<Product | null> {
     return prisma.product.findUnique({ where: { id } });
   }
 
+  // Liste tous les produits
   async listProducts(): Promise<Product[]> {
     return prisma.product.findMany();
   }
 
+  // Crée une vente avec des items
   async createSale(items: { productId: number; quantity: number }[]): Promise<Sale> {
     return prisma.sale.create({
       data: {
@@ -35,6 +38,7 @@ export class PrismaRepository {
     });
   }
 
+  // Retire un produit du stock selon son ID et la quantité
   async decrementStock(productId: number, qty: number): Promise<void> {
     await prisma.product.update({
       where: { id: productId },
@@ -42,6 +46,7 @@ export class PrismaRepository {
     });
   }
 
+  // Recherche par nom (insensible à la casse)
   async findProductsByName(name: string): Promise<Product[]> {
     return prisma.product.findMany({
       where: { name: { contains: name, mode: 'insensitive' } },

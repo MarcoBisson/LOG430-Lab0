@@ -11,7 +11,7 @@ describe('SaleService', () => {
             findProductById: jest.fn(),
             createSale: jest.fn(),
             decrementStock: jest.fn(),
-            // stubs vides pour les autres méthodes
+            // on ajoute des stubs vides pour éviter TS errors
             createProduct: jest.fn(),
             listProducts: jest.fn(),
             findProductsByName: jest.fn(),

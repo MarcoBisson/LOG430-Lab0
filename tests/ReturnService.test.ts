@@ -11,7 +11,7 @@ describe('ReturnService', () => {
             getSaleById: jest.fn(),
             incrementStock: jest.fn(),
             deleteSale: jest.fn(),
-            // stubs vides
+            // on ajoute des stubs vides pour éviter TS errors
             createProduct: jest.fn(),
             listProducts: jest.fn(),
             findProductById: jest.fn(),

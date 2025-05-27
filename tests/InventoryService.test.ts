@@ -9,7 +9,7 @@ describe('InventoryService', () => {
     beforeEach(() => {
         mockRepo = {
             listProducts: jest.fn(),
-            // stubs vides
+            // on ajoute des stubs vides pour éviter TS errors
             createProduct: jest.fn(),
             findProductById: jest.fn(),
             createSale: jest.fn(),
