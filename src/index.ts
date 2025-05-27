@@ -1,22 +1,25 @@
 import inquirer from "inquirer";
-import { PrismaRepository }    from "./infrastructure/PrismaRepository";
-import { SaleService }         from "./domain/services/SaleService";
-import { ReturnService }       from "./domain/services/ReturnService";
-import { InventoryService }    from "./domain/services/InventoryService";
-import { CartItem }            from "./domain/entities";
+import { PrismaRepository } from "./infrastructure/PrismaRepository";
+import { SaleService } from "./domain/services/SaleService";
+import { ReturnService } from "./domain/services/ReturnService";
+import { InventoryService } from "./domain/services/InventoryService";
+import { ProductService } from "./domain/services/ProductService";
+import { CartItem } from "./domain/entities";
 
-const repo             = new PrismaRepository();
-const saleService      = new SaleService(repo);
-const returnService    = new ReturnService(repo);
+const repo = new PrismaRepository();
+const productService = new ProductService(repo);
+const saleService = new SaleService(repo);
+const returnService = new ReturnService(repo);
 const inventoryService = new InventoryService(repo);
 
 async function main() {
   while (true) {
     const { action } = await inquirer.prompt({
-      type:    "list",
-      name:    "action",
+      type: "list",
+      name: "action",
       message: "Sélectionnez une action",
       choices: [
+        "Ajouter un produit",
         "Rechercher un produit",
         "Enregistrer une vente",
         "Gérer les retours",
@@ -26,22 +29,21 @@ async function main() {
     });
 
     switch (action) {
+      case "Ajouter un produit":
+        await handleAddProduct();
+        break;
       case "Rechercher un produit":
         await handleSearch();
         break;
-
       case "Enregistrer une vente":
         await handleSale();
         break;
-
       case "Gérer les retours":
         await handleReturn();
         break;
-
       case "Consulter l’état du stock":
         await handleStock();
         break;
-
       case "Quitter":
         console.log("Au revoir !");
         process.exit(0);
@@ -49,10 +51,31 @@ async function main() {
   }
 }
 
+async function handleAddProduct() {
+  const answers = await inquirer.prompt([
+    { type: "input", name: "name", message: "Nom du produit :" },
+    { type: "number", name: "price", message: "Prix (ex. ##.##) :" },
+    { type: "number", name: "stock", message: "Quantité en stock :" },
+    { type: "input", name: "category", message: "Catégorie (optionnel) :" }
+  ]);
+
+  try {
+    const prod = await productService.addProduct(
+      answers.name,
+      answers.price,
+      answers.stock,
+      answers.category || undefined
+    );
+    console.log("Produit créé :", prod);
+  } catch (err: any) {
+    console.error("Erreur lors de la création :", err.message);
+  }
+}
+
 async function handleSearch() {
   const { criterion } = await inquirer.prompt({
-    type:    "list",
-    name:    "criterion",
+    type: "list",
+    name: "criterion",
     message: "Par quel critère ?",
     choices: ["Identifiant", "Nom", "Catégorie"]
   });
@@ -60,8 +83,8 @@ async function handleSearch() {
   let results;
   if (criterion === "Identifiant") {
     const { id } = await inquirer.prompt({
-      type:    "number",
-      name:    "id",
+      type: "number",
+      name: "id",
       message: "ID du produit :"
     });
     const p = await repo.findProductById(id);
@@ -69,16 +92,16 @@ async function handleSearch() {
   }
   else if (criterion === "Nom") {
     const { name } = await inquirer.prompt({
-      type:    "input",
-      name:    "name",
+      type: "input",
+      name: "name",
       message: "Nom (chaîne contenue) :"
     });
     results = await repo.findProductsByName(name);
   }
-  else { // Catégorie
+  else {
     const { category } = await inquirer.prompt({
-      type:    "input",
-      name:    "category",
+      type: "input",
+      name: "category",
       message: "Catégorie exacte :"
     });
     results = await repo.findProductsByCategory(category);
@@ -97,12 +120,12 @@ async function handleSale() {
   while (addMore) {
     const { productId, quantity } = await inquirer.prompt([
       { type: "number", name: "productId", message: "ID produit :" },
-      { type: "number", name: "quantity",  message: "Quantité   :" }
+      { type: "number", name: "quantity", message: "Quantité   :" }
     ]);
     items.push(new CartItem(productId, quantity));
     const { more } = await inquirer.prompt({
-      type:    "confirm",
-      name:    "more",
+      type: "confirm",
+      name: "more",
       message: "Ajouter un autre item ?",
       default: false
     });
@@ -117,8 +140,8 @@ async function handleSale() {
 
 async function handleReturn() {
   const { saleId } = await inquirer.prompt({
-    type:    "number",
-    name:    "saleId",
+    type: "number",
+    name: "saleId",
     message: "ID de la vente à annuler :"
   });
   try {
@@ -131,10 +154,10 @@ async function handleReturn() {
 async function handleStock() {
   const products = await inventoryService.listStock();
   console.table(products.map(p => ({
-    id:       p.id,
-    name:     p.name,
+    id: p.id,
+    name: p.name,
     category: p.category,
-    stock:    p.stock
+    stock: p.stock
   })));
 }
 

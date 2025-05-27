@@ -3,6 +3,15 @@ import { PrismaClient, Product, Sale, SaleItem } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export class PrismaRepository {
+  async createProduct(data: {
+    name: string;
+    price: number;
+    stock: number;
+    category?: string;
+  }): Promise<Product> {
+    return prisma.product.create({ data });
+  }
+
   async findProductById(id: number): Promise<Product | null> {
     return prisma.product.findUnique({ where: { id } });
   }
