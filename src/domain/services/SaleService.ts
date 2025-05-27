@@ -1,8 +1,8 @@
-import { PrismaRepository } from "../../infrastructure/PrismaRepository";
-import { CartItem } from "../entities";
+import type { PrismaRepository } from '../../infrastructure/PrismaRepository';
+import type { CartItem } from '../entities';
 
 export class SaleService {
-  constructor(private repo: PrismaRepository) {}
+  constructor(private readonly repo: PrismaRepository) {}
 
   async recordSale(items: CartItem[]): Promise<void> {
     // Vérifier stock

@@ -1,7 +1,7 @@
-import { PrismaRepository } from "../../infrastructure/PrismaRepository";
+import type { PrismaRepository } from '../../infrastructure/PrismaRepository';
 
 export class ReturnService {
-  constructor(private repo: PrismaRepository) {}
+  constructor(private readonly repo: PrismaRepository) {}
 
   /** 
    * Annule la vente : 

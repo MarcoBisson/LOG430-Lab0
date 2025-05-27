@@ -1,4 +1,5 @@
-import { PrismaClient, Product, Sale, SaleItem } from "@prisma/client";
+import type { Product, Sale, SaleItem } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -26,31 +27,31 @@ export class PrismaRepository {
         items: {
           create: items.map(i => ({
             product: { connect: { id: i.productId } },
-            quantity: i.quantity
-          }))
-        }
+            quantity: i.quantity,
+          })),
+        },
       },
-      include: { items: true }
+      include: { items: true },
     });
   }
 
   async decrementStock(productId: number, qty: number): Promise<void> {
     await prisma.product.update({
       where: { id: productId },
-      data: { stock: { decrement: qty } }
+      data: { stock: { decrement: qty } },
     });
   }
 
   async findProductsByName(name: string): Promise<Product[]> {
     return prisma.product.findMany({
-      where: { name: { contains: name, mode: "insensitive" } }
+      where: { name: { contains: name, mode: 'insensitive' } },
     });
   }
 
   // Recherche par catégorie (égalité)
   async findProductsByCategory(category: string): Promise<Product[]> {
     return prisma.product.findMany({
-      where: { category }
+      where: { category },
     });
   }
 
@@ -58,7 +59,7 @@ export class PrismaRepository {
   async getSaleById(id: number): Promise<(Sale & { items: SaleItem[] }) | null> {
     return prisma.sale.findUnique({
       where: { id },
-      include: { items: true }
+      include: { items: true },
     });
   }
 
@@ -72,7 +73,7 @@ export class PrismaRepository {
   async incrementStock(productId: number, qty: number): Promise<void> {
     await prisma.product.update({
       where: { id: productId },
-      data: { stock: { increment: qty } }
+      data: { stock: { increment: qty } },
     });
   }
 }

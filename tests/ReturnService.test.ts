@@ -1,8 +1,8 @@
-import { ReturnService } from "../src/domain/services/ReturnService";
-import { PrismaRepository } from "../src/infrastructure/PrismaRepository";
-import { Sale, SaleItem } from "@prisma/client";
+import { ReturnService } from '../src/domain/services/ReturnService';
+import type { PrismaRepository } from '../src/infrastructure/PrismaRepository';
+import type { Sale, SaleItem } from '@prisma/client';
 
-describe("ReturnService", () => {
+describe('ReturnService', () => {
     let mockRepo: jest.Mocked<PrismaRepository>;
     let svc: ReturnService;
 
@@ -23,7 +23,7 @@ describe("ReturnService", () => {
         svc = new ReturnService(mockRepo);
     });
 
-    it("restaure le stock et supprime la vente existante", async () => {
+    it('restaure le stock et supprime la vente existante', async () => {
         const items: SaleItem[] = [
             { id: 1, saleId: 100, productId: 5, quantity: 3 },
             { id: 2, saleId: 100, productId: 6, quantity: 1 },
@@ -42,7 +42,7 @@ describe("ReturnService", () => {
 
     it("Retourne une erreur si la vente n'existe pas", async () => {
         mockRepo.getSaleById.mockResolvedValue(null);
-        await expect(svc.processReturn(999)).rejects.toThrow("Vente 999 introuvable.");
+        await expect(svc.processReturn(999)).rejects.toThrow('Vente 999 introuvable.');
         expect(mockRepo.incrementStock).not.toHaveBeenCalled();
         expect(mockRepo.deleteSale).not.toHaveBeenCalled();
     });

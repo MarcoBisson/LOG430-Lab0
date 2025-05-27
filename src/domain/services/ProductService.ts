@@ -1,14 +1,14 @@
-import { PrismaRepository } from "../../infrastructure/PrismaRepository";
-import { Product } from "@prisma/client";
+import type { PrismaRepository } from '../../infrastructure/PrismaRepository';
+import type { Product } from '@prisma/client';
 
 export class ProductService {
-    constructor(private repo: PrismaRepository) { }
+    constructor(private readonly repo: PrismaRepository) { }
 
     async addProduct(
         name: string,
         price: number,
         stock: number,
-        category?: string
+        category?: string,
     ): Promise<Product> {
         return this.repo.createProduct({ name, price, stock, category });
     }

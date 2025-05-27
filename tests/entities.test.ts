@@ -1,9 +1,9 @@
-import { Product, CartItem } from "../src/domain/entities";
+import { Product, CartItem } from '../src/domain/entities';
 
-describe("Product", () => {
-    it("doit initialiser correctement toutes ses propriétés", () => {
+describe('Product', () => {
+    it('doit initialiser correctement toutes ses propriétés', () => {
         const id = 42;
-        const name = "Produit Test";
+        const name = 'Produit Test';
         const price = 19.99;
         const stock = 250;
 
@@ -16,8 +16,8 @@ describe("Product", () => {
     });
 });
 
-describe("CartItem", () => {
-    it("doit initialiser correctement productId et quantity", () => {
+describe('CartItem', () => {
+    it('doit initialiser correctement productId et quantity', () => {
         const productId = 7;
         const quantity = 3;
 

@@ -1,8 +1,8 @@
-import { InventoryService } from "../src/domain/services/InventoryService";
-import { PrismaRepository } from "../src/infrastructure/PrismaRepository";
-import { Product } from "@prisma/client";
+import { InventoryService } from '../src/domain/services/InventoryService';
+import type { PrismaRepository } from '../src/infrastructure/PrismaRepository';
+import type { Product } from '@prisma/client';
 
-describe("InventoryService", () => {
+describe('InventoryService', () => {
     let mockRepo: jest.Mocked<PrismaRepository>;
     let svc: InventoryService;
 
@@ -23,10 +23,10 @@ describe("InventoryService", () => {
         svc = new InventoryService(mockRepo);
     });
 
-    it("retourne la liste complète des produits", async () => {
+    it('retourne la liste complète des produits', async () => {
         const fake: Product[] = [
-            { id: 1, name: "X", price: 1, stock: 10, category: "C1" },
-            { id: 2, name: "Y", price: 2, stock: 5, category: "C2" },
+            { id: 1, name: 'X', price: 1, stock: 10, category: 'C1' },
+            { id: 2, name: 'Y', price: 2, stock: 5, category: 'C2' },
         ];
         mockRepo.listProducts.mockResolvedValue(fake);
 
