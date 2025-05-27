@@ -8,7 +8,7 @@ Ce projet est une application minimale (ex : affichage "Hello, World!", additi
 
 - Structurer un dépôt de projet sur GitHub
 - Mettre en place des tests unitaires automatisés
-- Conteneuriser l’application avec Docker
+- Conteneuriser l'application avec Docker
 - Automatiser lint, tests, build et push (sur Docker Hub) avec une pipeline CI/CD
 
 ## Structure du projet
@@ -24,14 +24,14 @@ LOG430-Lab0/
 │   └── workflows/
 │       └── ci.yml        # Pipeline GitHub Actions (lint, test, build, push)
 ├── screenshots/          # Screenshots
-├── Dockerfile            # Image Docker de l’application
+├── Dockerfile            # Image Docker de l'application
 ├── docker-compose.yml    # Orchestration multi-conteneurs
 ├── .dockerignore         # Fichiers à ignorer lors du build Docker
 ├── .gitignore            # Fichiers à ignorer par Git
 └── README.md             # Documentation sur le projet
 ```
 
-## Instructions d’exécution
+## Instructions d'exécution
 
 ### 1. Cloner le projet
 
@@ -40,7 +40,7 @@ git clone https://github.com/MarcoBisson/LOG430-Lab0.git
 cd LOG430-Lab0
 ```
 
-### 2. Exécuter l’application en local (hors conteneur)
+### 2. Exécuter l'application en local (hors conteneur)
 Installer Python:
 ```bash
 sudo apt install python3 python3-pip
@@ -55,7 +55,7 @@ ou
 sudo apt install pytest black pylint
 ```
 
-Lancer l’application :
+Lancer l'application :
 ```bash
 python app/main.py
 ```
@@ -68,7 +68,7 @@ pytest tests/
 
 ### 4. Exécuter avec Docker (sans Docker Compose)
 
-Construire l’image :
+Construire l'image :
 ```bash
 docker build -t log430-lab0 .
 ```

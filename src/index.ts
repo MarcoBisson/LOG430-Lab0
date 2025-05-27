@@ -5,6 +5,7 @@ import { ReturnService } from "./domain/services/ReturnService";
 import { InventoryService } from "./domain/services/InventoryService";
 import { ProductService } from "./domain/services/ProductService";
 import { CartItem } from "./domain/entities";
+import { parse } from "path";
 
 const repo = new PrismaRepository();
 const productService = new ProductService(repo);
@@ -23,7 +24,7 @@ async function main() {
         "Rechercher un produit",
         "Enregistrer une vente",
         "Gérer les retours",
-        "Consulter l’état du stock",
+        "Consulter l'état du stock",
         "Quitter"
       ]
     });
@@ -41,7 +42,7 @@ async function main() {
       case "Gérer les retours":
         await handleReturn();
         break;
-      case "Consulter l’état du stock":
+      case "Consulter l'état du stock":
         await handleStock();
         break;
       case "Quitter":
@@ -54,8 +55,19 @@ async function main() {
 async function handleAddProduct() {
   const answers = await inquirer.prompt([
     { type: "input", name: "name", message: "Nom du produit :" },
-    { type: "number", name: "price", message: "Prix (ex. ##.##) :" },
-    { type: "number", name: "stock", message: "Quantité en stock :" },
+    {
+      type: "input",
+      name: "price",
+      message: "Prix (ex. 20.99) :",
+      validate: (input: string) => {
+        if (!/^[0-9]+(\.[0-9]{1,2})?$/.test(input) && parseFloat(input) > 0) {
+          return "Le prix doit être plus grand que 0 et au format valide (ex. 20.99).";
+        }
+        return true;
+      },
+      filter: (input: string) => parseFloat(input)
+    },
+    { type: "number", name: "stock", message: "Quantité en stock :", validate: input => (typeof input === "number" && input > 0) || "Le stock doit être supérieur à 0." },
     { type: "input", name: "category", message: "Catégorie (optionnel) :" }
   ]);
 
