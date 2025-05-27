@@ -11,3 +11,8 @@ Exécutez la commande `npx prisma studio`, cette commande permet d'afficher la b
 
 ## Pour réinitialiser la base de données
 Exécutez la commande `npx prisma migrate reset [migration]`
+
+## Utilisation de l'image docker pour
+On peut build l'image de l'application avec `docker-compose build`.
+
+Ensuite, exécutez la commande `docker-compose run --rm app` permet de lancer le conteneur de la base de données ainsi que la console fonctionnel pour l'app avec l'image.
