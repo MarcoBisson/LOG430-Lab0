@@ -23,7 +23,7 @@ module.exports = [
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/explicit-function-return-type": "off",
 
-      // — favour readonly where you don’t reassign —
+      // — favour readonly where you don't reassign —
       "@typescript-eslint/prefer-readonly": "error",
 
       // — encourage “import type” for purely type-only imports —
