@@ -1,5 +1,5 @@
-import { ReturnService } from '../src/domain/services/ReturnService';
-import type { PrismaRepository } from '../src/infrastructure/PrismaRepository';
+import { ReturnService } from '../src/backend/domain/services/ReturnService';
+import type { PrismaRepository } from '../src/backend/infrastructure/PrismaRepository';
 import type { Sale, SaleItem } from '@prisma/client';
 
 describe('ReturnService', () => {

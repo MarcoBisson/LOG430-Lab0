@@ -1,6 +1,6 @@
-import { SaleService } from '../src/domain/services/SaleService';
-import type { PrismaRepository } from '../src/infrastructure/PrismaRepository';
-import { CartItem } from '../src/domain/entities';
+import { SaleService } from '../src/backend/domain/services/SaleService';
+import type { PrismaRepository } from '../src/backend/infrastructure/PrismaRepository';
+import { CartItem } from '../src/backend/domain/entities';
 
 describe('SaleService', () => {
     let mockRepo: jest.Mocked<PrismaRepository>;

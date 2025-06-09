@@ -1,10 +1,10 @@
 import inquirer from 'inquirer';
-import { PrismaRepository } from './infrastructure/PrismaRepository';
-import { SaleService } from './domain/services/SaleService';
-import { ReturnService } from './domain/services/ReturnService';
-import { InventoryService } from './domain/services/InventoryService';
-import { ProductService } from './domain/services/ProductService';
-import { CartItem } from './domain/entities';
+import { PrismaRepository } from './backend/infrastructure/PrismaRepository';
+import { SaleService } from './backend/domain/services/SaleService';
+import { ReturnService } from './backend/domain/services/ReturnService';
+import { InventoryService } from './backend/domain/services/InventoryService';
+import { ProductService } from './backend/domain/services/ProductService';
+import { CartItem } from './backend/domain/entities';
 
 const repo = new PrismaRepository();
 const productService = new ProductService(repo);

@@ -1,4 +1,4 @@
-import { Product, CartItem } from '../src/domain/entities';
+import { Product, CartItem } from '../src/backend/domain/entities';
 
 describe('Product', () => {
     it('doit initialiser correctement toutes ses propriétés', () => {

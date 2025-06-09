@@ -14,62 +14,68 @@ generator client {
 }
 
 model Product {
-  id            Int                     @id @default(autoincrement())
-  name          String                  
-  price         Float                   
-  description   String?                 
-  stock         Int                     
-  category      String?
-  saleItems     SaleItem[]              
-  storeStocks   StoreStock[]            
-  replenishments ReplenishmentRequest[] 
+  id             Int                    @id @default(autoincrement())
+  name           String
+  price          Float
+  description    String?
+  stock          Int
+  category       String?
+  saleItems      SaleItem[]
+  storeStocks    StoreStock[]
+  replenishments ReplenishmentRequest[]
 }
-  
+
 model Store {
-  id                      Int                     @id @default(autoincrement())
-  name                    String
-  address                 String
-  sales                   Sale[]
-  storeStocks             StoreStock[]
-  replenishmentRequests   ReplenishmentRequest[]
+  id                    Int                    @id @default(autoincrement())
+  name                  String
+  address               String
+  sales                 Sale[]
+  storeStocks           StoreStock[]
+  replenishmentRequests ReplenishmentRequest[]
 }
 
 model StoreStock {
-  id         Int      @id @default(autoincrement())
-  store      Store    @relation(fields: [storeId], references: [id])
-  storeId    Int
-  product    Product  @relation(fields: [productId], references: [id])
-  productId  Int
-  quantity   Int
+  id        Int     @id @default(autoincrement())
+  store     Store   @relation(fields: [storeId], references: [id])
+  storeId   Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+
+  @@unique([storeId, productId])
 }
 
 model Sale {
-  id         Int         @id @default(autoincrement())
-  date       DateTime    @default(now())
-  store      Store       @relation(fields: [storeId], references: [id])
-  storeId    Int
-  saleItems  SaleItem[]
+  id        Int        @id @default(autoincrement())
+  date      DateTime   @default(now())
+  store     Store      @relation(fields: [storeId], references: [id])
+  storeId   Int
+  saleItems SaleItem[]
 }
 
 model SaleItem {
-  id         Int      @id @default(autoincrement())
-  sale       Sale     @relation(fields: [saleId], references: [id])
-  saleId     Int
-  product    Product  @relation(fields: [productId], references: [id])
-  productId  Int
-  quantity   Int
-  unitPrice  Float
+  id        Int     @id @default(autoincrement())
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  saleId    Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+  unitPrice Float
+
+  @@unique([saleId, productId])
 }
 
 model ReplenishmentRequest {
-  id         Int            @id @default(autoincrement())
-  store      Store          @relation(fields: [storeId], references: [id])
-  storeId    Int
-  product    Product        @relation(fields: [productId], references: [id])
-  productId  Int
-  quantity   Int            // Quantité demandée :contentReference[oaicite:5]{index=5}
-  status     RequestStatus  @default(PENDING)
-  createdAt  DateTime       @default(now())
+  id        Int           @id @default(autoincrement())
+  store     Store         @relation(fields: [storeId], references: [id])
+  storeId   Int
+  product   Product       @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int // Quantité demandée :contentReference[oaicite:5]{index=5}
+  status    RequestStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+
+  @@unique([storeId, productId])
 }
 
 enum RequestStatus {

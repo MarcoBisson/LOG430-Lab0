@@ -1,5 +1,5 @@
-import { InventoryService } from '../src/domain/services/InventoryService';
-import type { PrismaRepository } from '../src/infrastructure/PrismaRepository';
+import { InventoryService } from '../src/backend/domain/services/InventoryService';
+import type { PrismaRepository } from '../src/backend/infrastructure/PrismaRepository';
 import type { Product } from '@prisma/client';
 
 describe('InventoryService', () => {
