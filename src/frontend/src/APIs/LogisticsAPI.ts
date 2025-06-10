@@ -1,6 +1,6 @@
-import { ReplenishmentRequestDTO } from '@/DTOs/ReplenishmentRequestDTO';
-import { StoreStockDTO } from '@/DTOs/StoreStockDTO';
-import { API_BASE } from '@/config/api';
+import { ReplenishmentRequestDTO } from '../DTOs/ReplenishmentRequestDTO';
+import { StoreStockDTO } from '../DTOs/StoreStockDTO';
+import { API_BASE } from '../config/api';
 
 /**
  * Envoie une demande de réapprovisionnement pour un produit dans un magasin spécifique.

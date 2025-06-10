@@ -1,6 +1,6 @@
-import { StockDTO } from '@/DTOs/StockDTO';
-import { StoreStockDTO } from '@/DTOs/StoreStockDTO';
-import { API_BASE } from '@/config/api';
+import { StockDTO } from '../DTOs/StockDTO';
+import { StoreStockDTO } from '../DTOs/StoreStockDTO';
+import { API_BASE } from '../config/api';
 
 /**
  * Récupère la liste des stocks centraux

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { processReturn } from '@/APIs/ReturnAPI';
+import { processReturn } from '../APIs/ReturnAPI';
 
 export default function ReturnsPage() {
     const [saleId, setSaleId] = useState(0);

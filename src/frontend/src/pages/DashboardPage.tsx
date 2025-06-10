@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ReportDTO } from '@/DTOs/ReportDTO';
-import { getReport } from '@/APIs/ReportAPI';
+import { ReportDTO } from '../DTOs/ReportDTO';
+import { getReport } from '../APIs/ReportAPI';
 
 export default function DashboardPage() {
     const [report, setReport] = useState<ReportDTO | null>(null);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ProductDTO } from '@/DTOs/ProductDTO';
+import { ProductDTO } from '../DTOs/ProductDTO';
 import { getProducts, searchProductsByName, searchProductsByCategory, createProduct, updateProduct, deleteProduct } from '../APIs/ProductAPI';
 
 export default function ProductsPage() {

@@ -1,22 +1,25 @@
-FROM node:20-alpine AS builder
-
+FROM node:20-alpine AS build
 WORKDIR /app
 
-COPY package*.json tsconfig.json ./
+COPY package.json package-lock.json tsconfig.json vite.config.ts ./
+RUN npm ci
+
 COPY prisma ./prisma
+RUN npx prisma generate
 
-RUN npm ci && npx prisma generate
+COPY src/backend ./src/backend
+RUN npm run build:backend
 
-COPY src ./src
 
-RUN npm run build
+COPY src/frontend ./src/frontend
+RUN npm run build:frontend
 
 FROM node:20-alpine
-
 WORKDIR /app
 
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist/backend ./dist/backend
+COPY --from=build /app/dist/public  ./dist/public
 
-ENTRYPOINT ["node", "dist/src/index.js"]
+EXPOSE 3000
+CMD ["node", "dist/backend/index.js"]

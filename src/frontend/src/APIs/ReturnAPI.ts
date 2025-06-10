@@ -1,4 +1,4 @@
-import { API_BASE } from "@/config/api";
+import { API_BASE } from "../config/api";
 
 /**
  * Retourne un produit d'une vente et retire la vente de la liste des ventes.

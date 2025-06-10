@@ -1,5 +1,5 @@
 import { ProductDTO } from "../DTOs/ProductDTO";
-import { API_BASE } from "@/config/api";
+import { API_BASE } from "../config/api";
 
 /**
  * Fetches tous les produits disponibles dans la base de données.

@@ -1,4 +1,4 @@
-import { ReportDTO } from '@/DTOs/ReportDTO';
+import { ReportDTO } from '../DTOs/ReportDTO';
 import { API_BASE } from '../config/api';
 
 /**

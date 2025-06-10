@@ -4,14 +4,16 @@
   "description": "## Description",
   "main": "index.js",
   "scripts": {
+    "build:backend": "tsc",
+    "build:frontend": "vite build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "dev": "vite",
+    "preview": "vite preview",
     "test": "jest --coverage",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "studio": "prisma studio",
-    "db-reset": "prisma migrate reset",
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "db-reset": "prisma migrate reset"
   },
   "keywords": [],
   "author": "",

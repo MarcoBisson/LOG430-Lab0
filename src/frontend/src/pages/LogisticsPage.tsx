@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { StockDTO } from '@/DTOs/StockDTO';
-import { StoreStockDTO } from '@/DTOs/StoreStockDTO';
-import { ReplenishmentRequestDTO } from '@/DTOs/ReplenishmentRequestDTO';
-import { getStoreStock } from '@/APIs/InventoryAPI';
-import { getCentralStock } from '@/APIs/InventoryAPI';
-import { requestReplenishment, approveReplenishment, getAlerts } from '@/APIs/LogisticsAPI';
+import { StockDTO } from '../DTOs/StockDTO';
+import { StoreStockDTO } from '../DTOs/StoreStockDTO';
+import { ReplenishmentRequestDTO } from '../DTOs/ReplenishmentRequestDTO';
+import { getStoreStock } from '../APIs/InventoryAPI';
+import { getCentralStock } from '../APIs/InventoryAPI';
+import { requestReplenishment, approveReplenishment, getAlerts } from '../APIs/LogisticsAPI';
 
 export default function LogisticsPage() {
     const [central, setCentral] = useState<StockDTO[]>([]);

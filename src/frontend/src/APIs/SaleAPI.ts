@@ -1,6 +1,6 @@
-import { SaleDTO } from "@/DTOs/SaleDTO";
-import { CartItemDTO } from "@/DTOs/CartItemDTO";
-import { API_BASE } from "@/config/api";
+import { SaleDTO } from "../DTOs/SaleDTO";
+import { CartItemDTO } from "../DTOs/CartItemDTO";
+import { API_BASE } from "../config/api";
 
 /**
  * Enregistre une vente dans le système

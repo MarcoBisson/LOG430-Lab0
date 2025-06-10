@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { CartItemDTO } from '@/DTOs/CartItemDTO';
-import { SaleDTO } from '@/DTOs/SaleDTO';
-import { recordSale, getSale } from '@/APIs/SaleAPI';
+import { CartItemDTO } from '../DTOs/CartItemDTO';
+import { SaleDTO } from '../DTOs/SaleDTO';
+import { recordSale, getSale } from '../APIs/SaleAPI';
 
 export default function SalesPage() {
     const [storeId, setStoreId] = useState(1);
