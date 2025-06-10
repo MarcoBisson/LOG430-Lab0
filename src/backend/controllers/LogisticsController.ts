@@ -9,8 +9,13 @@ export class LogisticsController {
      * @param res La réponse HTTP.
      */
     static async request(req: Request, res: Response) {
-        const r = await logisticsService.requestReplenishment(+req.body.storeId, +req.body.productId, +req.body.quantity);
-        res.status(201).json(r);
+        try {
+            const { storeId, productId, quantity } = req.body;
+            const result = await logisticsService.requestReplenishment(+storeId, +productId, +quantity);
+            return res.status(201).json(result);
+        } catch (err: any) {
+            return res.status(400).json({ error: err.message });
+        }
     }
 
     /**
@@ -19,8 +24,13 @@ export class LogisticsController {
      * @param res La réponse HTTP.
      */
     static async approve(req: Request, res: Response) {
-        const a = await logisticsService.approveReplenishment(+req.params.id);
-        res.json(a);
+        try {
+            const { id } = req.params;
+            const result = await logisticsService.approveReplenishment(+id);
+            return res.json(result);
+        } catch (err: any) {
+            return res.status(400).json({ error: err.message });
+        }
     }
 
     /**

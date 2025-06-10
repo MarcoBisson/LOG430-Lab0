@@ -1,4 +1,4 @@
-import { Product, Sale, SaleItem, StoreStock, ReplenishmentRequest, RequestStatus } from '@prisma/client';
+import { Product, Sale, SaleItem, Store, StoreStock, ReplenishmentRequest, RequestStatus } from '@prisma/client';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -108,6 +108,11 @@ export class PrismaRepository {
    */
   async incrementCentralStock(productId: number, qty: number): Promise<Product> {
     return prisma.product.update({ where: { id: productId }, data: { stock: { increment: qty } } });
+  }
+
+  // Store
+  async findStoreById(id: number): Promise<Store | null> {
+    return prisma.store.findUnique({ where: { id: id } });
   }
 
   // StoreStock
