@@ -1,6 +1,11 @@
 import { Request, Response } from 'express';
-import { LogisticsService } from '../domain/services/LogisticsService';
-const logisticsService = new LogisticsService();
+import { LogisticsService } from '../../application/services/LogisticsService';
+import { PrismaLogisticsRepository } from '../../infrastructure/prisma/PrismaLogisticsRepository';
+import { PrismaStoreRepository } from '../../infrastructure/prisma/PrismaStoreRepository';
+
+const logisticsRepository = new PrismaLogisticsRepository();
+const storeRepository = new PrismaStoreRepository();
+const logisticsService = new LogisticsService(logisticsRepository, storeRepository);
 
 export class LogisticsController {
     /**
@@ -12,9 +17,9 @@ export class LogisticsController {
         try {
             const { storeId, productId, quantity } = req.body;
             const result = await logisticsService.requestReplenishment(+storeId, +productId, +quantity);
-            return res.status(201).json(result);
+            res.status(201).json(result);
         } catch (err: any) {
-            return res.status(400).json({ error: err.message });
+            res.status(400).json({ error: err.message });
         }
     }
 
@@ -27,18 +32,18 @@ export class LogisticsController {
         try {
             const { id } = req.params;
             const result = await logisticsService.approveReplenishment(+id);
-            return res.json(result);
+            res.json(result);
         } catch (err: any) {
-            return res.status(400).json({ error: err.message });
+            res.status(400).json({ error: err.message });
         }
     }
 
     /**
      * Alerte les utilisateurs sur les stocks critiques.
-     * @param _req La requête HTTP.
+     * @param req La requête HTTP.
      * @param res La réponse HTTP.
      */
-    static async alerts(_req: Request, res: Response) {
+    static async alerts(req: Request, res: Response) {
         const alerts = await logisticsService.checkCriticalStock();
         res.json(alerts);
     }

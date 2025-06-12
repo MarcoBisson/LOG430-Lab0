@@ -1,6 +1,11 @@
 import { Request, Response } from 'express';
-import { SaleService } from '../domain/services/SaleService';
-const saleService = new SaleService();
+import { SaleService } from '../../application/services/SaleService';
+import { PrismaSaleRepository } from '../../infrastructure/prisma/PrismaSaleRepository';
+import { PrismaStoreRepository } from '../../infrastructure/prisma/PrismaStoreRepository';
+
+const saleRepository = new PrismaSaleRepository();
+const storeRepository = new PrismaStoreRepository();
+const saleService = new SaleService(saleRepository, storeRepository);
 
 export class SaleController {
     /**

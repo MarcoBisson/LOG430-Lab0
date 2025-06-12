@@ -67,14 +67,14 @@ model SaleItem {
 }
 
 model ReplenishmentRequest {
-  id        Int           @id @default(autoincrement())
-  store     Store         @relation(fields: [storeId], references: [id])
+  id        Int                        @id @default(autoincrement())
+  store     Store                      @relation(fields: [storeId], references: [id])
   storeId   Int
-  product   Product       @relation(fields: [productId], references: [id])
+  product   Product                    @relation(fields: [productId], references: [id])
   productId Int
   quantity  Int
-  status    RequestStatus @default(PENDING)
-  createdAt DateTime      @default(now())
+  status    ReplenishmentRequestStatus @default(PENDING)
+  createdAt DateTime                   @default(now())
 
   @@unique([storeId, productId])
 }
@@ -85,7 +85,7 @@ enum StoreType {
   HEADQUARTERS
 }
 
-enum RequestStatus {
+enum ReplenishmentRequestStatus {
   PENDING
   APPROVED
   REJECTED

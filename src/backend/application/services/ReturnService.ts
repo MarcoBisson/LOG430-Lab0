@@ -1,7 +1,8 @@
-import { PrismaRepository } from '../../infrastructure/PrismaRepository';
+import { ISaleRepository } from "../../domain/repositories/ISaleRepository";
+import { IStoreRepository } from "../../domain/repositories/IStoreRepository";
 
 export class ReturnService {
-    constructor(private repo = new PrismaRepository()) { }
+    constructor(private saleRepo: ISaleRepository, private storeRepo: IStoreRepository) { }
 
     /**
      * Traite le retour d'une vente en réintégrant les produits dans le stock du magasin.
@@ -9,13 +10,13 @@ export class ReturnService {
      * @throws Error si la vente n'existe pas ou si le stock ne peut pas être mis à jour.
      */
     async processReturn(saleId: number): Promise<void> {
-        const sale = await this.repo.getSaleById(saleId);
+        const sale = await this.saleRepo.getSaleById(saleId);
         if (!sale) throw new Error(`Vente ${saleId} introuvable.`);
 
         for (const item of sale.saleItems) {
-            await this.repo.incrementStoreStock(sale.storeId, item.productId, item.quantity);
+            await this.storeRepo.incrementStoreStock(sale.storeId, item.productId, item.quantity);
         }
 
-        await this.repo.deleteSale(saleId);
+        await this.saleRepo.deleteSale(saleId);
     }
 }
