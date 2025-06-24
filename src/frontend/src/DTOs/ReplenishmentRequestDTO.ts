@@ -4,4 +4,5 @@ export interface ReplenishmentRequestDTO {
     productId: number;
     quantity: number;
     status: string;
+    createdAt: string;
 }

@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
-import { ProductService } from '../domain/services/ProductService';
-const productService = new ProductService();
+import { ProductService } from '../../application/services/ProductService';
+import { PrismaProductRepository } from '../../infrastructure/prisma/PrismaProductRepository';
+
+const productRepository = new PrismaProductRepository();
+const productService = new ProductService(productRepository);
 
 export class ProductController {
     /**

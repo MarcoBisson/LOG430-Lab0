@@ -29,6 +29,7 @@ model Store {
   id                    Int                    @id @default(autoincrement())
   name                  String
   address               String
+  type                  StoreType              @default(SALES)
   sales                 Sale[]
   storeStocks           StoreStock[]
   replenishmentRequests ReplenishmentRequest[]
@@ -66,19 +67,25 @@ model SaleItem {
 }
 
 model ReplenishmentRequest {
-  id        Int           @id @default(autoincrement())
-  store     Store         @relation(fields: [storeId], references: [id])
+  id        Int                        @id @default(autoincrement())
+  store     Store                      @relation(fields: [storeId], references: [id])
   storeId   Int
-  product   Product       @relation(fields: [productId], references: [id])
+  product   Product                    @relation(fields: [productId], references: [id])
   productId Int
-  quantity  Int // Quantité demandée :contentReference[oaicite:5]{index=5}
-  status    RequestStatus @default(PENDING)
-  createdAt DateTime      @default(now())
+  quantity  Int
+  status    ReplenishmentRequestStatus @default(PENDING)
+  createdAt DateTime                   @default(now())
 
   @@unique([storeId, productId])
 }
 
-enum RequestStatus {
+enum StoreType {
+  SALES
+  LOGISTICS
+  HEADQUARTERS
+}
+
+enum ReplenishmentRequestStatus {
   PENDING
   APPROVED
   REJECTED

@@ -1,16 +1,17 @@
-import { PrismaRepository } from '../../infrastructure/PrismaRepository';
-import { ProductEntity } from '../entities';
+
+import { Product } from '../../domain/entities/Product';
+import { IProductRepository } from '../../domain/repositories/IProductRepository';
 
 export class ProductService {
-    constructor(private repo = new PrismaRepository()) { }
+    constructor(private productRepo: IProductRepository) { }
 
     /**
      * Récupère une liste de tous les produits disponibles.
      * @returns Une liste de tous les produits disponibles.
      */
-    async listProducts(): Promise<ProductEntity[]> {
-        return (await this.repo.listProducts()).map(
-            p => new ProductEntity(p.id, p.name, p.price, p.description, p.category, p.stock)
+    async listProducts(): Promise<Product[]> {
+        return (await this.productRepo.listProducts()).map(
+            p => new Product(p.id, p.name, p.price, p.description, p.category, p.stock)
         );
     }
 
@@ -25,15 +26,15 @@ export class ProductService {
         description?: string;
         category?: string;
         stock: number;
-    }): Promise<ProductEntity> {
-        const p = await this.repo.createProduct({
+    }): Promise<Product> {
+        const p = await this.productRepo.createProduct({
             name: input.name,
             price: input.price,
             description: input.description ?? null,
             category: input.category ?? null,
             stock: input.stock
         });
-        return new ProductEntity(p.id, p.name, p.price, p.description, p.category, p.stock);
+        return new Product(p.id, p.name, p.price, p.description, p.category, p.stock);
     }
 
     /**
@@ -41,9 +42,9 @@ export class ProductService {
      * @param id L'ID du produit à récupérer.
      * @returns Une instance de ProductEntity représentant le produit, ou null si le produit n'existe pas.
      */
-    async getProductById(id: number): Promise<ProductEntity | null> {
-        const p = await this.repo.findProductById(id);
-        return p ? new ProductEntity(p.id, p.name, p.price, p.description, p.category, p.stock) : null;
+    async getProductById(id: number): Promise<Product | null> {
+        const p = await this.productRepo.findProductById(id);
+        return p ? new Product(p.id, p.name, p.price, p.description, p.category, p.stock) : null;
     }
 
     /**
@@ -51,10 +52,10 @@ export class ProductService {
      * @param name Le nom du produit à rechercher.
      * @returns Une liste de produits correspondant au nom recherché.
      */
-    async getProductsByName(name: string): Promise<ProductEntity[]> {
-        const products = await this.repo.findProductsByName(name);
+    async getProductsByName(name: string): Promise<Product[]> {
+        const products = await this.productRepo.findProductsByName(name);
         return products.map(
-            p => new ProductEntity(p.id, p.name, p.price, p.description, p.category, p.stock)
+            p => new Product(p.id, p.name, p.price, p.description, p.category, p.stock)
         );
     }
 
@@ -63,10 +64,10 @@ export class ProductService {
      * @param category La catégorie des produits à rechercher.
      * @returns Une liste de produits correspondant à la catégorie recherchée.
      */
-    async getProductsByCategory(category: string): Promise<ProductEntity[]> {
-        const products = await this.repo.findProductsByCategory(category);
+    async getProductsByCategory(category: string): Promise<Product[]> {
+        const products = await this.productRepo.findProductsByCategory(category);
         return products.map(
-            p => new ProductEntity(p.id, p.name, p.price, p.description, p.category, p.stock)
+            p => new Product(p.id, p.name, p.price, p.description, p.category, p.stock)
         );
     }
 
@@ -79,9 +80,9 @@ export class ProductService {
     async updateProduct(
         id: number,
         data: { name?: string; price?: number; description?: string; category?: string }
-    ): Promise<ProductEntity> {
-        const p = await this.repo.updateProduct(id, data);
-        return new ProductEntity(p.id, p.name, p.price, p.description, p.category, p.stock);
+    ): Promise<Product> {
+        const p = await this.productRepo.updateProduct(id, data);
+        return new Product(p.id, p.name, p.price, p.description, p.category, p.stock);
     }
 
     /**
@@ -90,6 +91,6 @@ export class ProductService {
      * @returns Une instance de ProductEntity représentant le produit supprimé.
      */
     async deleteProduct(id: number): Promise<void> {
-        const p = await this.repo.deleteProduct(id);
+        const p = await this.productRepo.deleteProduct(id);
     }
 }

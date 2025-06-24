@@ -1,12 +1,11 @@
 import * as express from 'express';
 import * as cors from 'cors';
-import * as path from 'path';
-import productRoutes from './routes/ProductRoutes';
-import saleRoutes from './routes/SaleRoutes';
-import returnRoutes from './routes/ReturnRoutes';
-import reportRoutes from './routes/ReportRoutes';
-import logisticsRoutes from './routes/LogisticsRoutes';
-import inventoryRoutes from './routes/InventoryRoutes';
+import productRoutes from './interfaces/routes/ProductRoutes';
+import saleRoutes from './interfaces/routes/SaleRoutes';
+import returnRoutes from './interfaces/routes/ReturnRoutes';
+import reportRoutes from './interfaces/routes/ReportRoutes';
+import logisticsRoutes from './interfaces/routes/LogisticsRoutes';
+import inventoryRoutes from './interfaces/routes/InventoryRoutes';
 
 const app = express();
 app.use(cors());

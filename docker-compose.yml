@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   db:
-    image: postgres:15
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
@@ -16,10 +16,10 @@ services:
       timeout: 5s
       retries: 5
 
-  app:
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: src/backend/Dockerfile
     depends_on:
       db:
         condition: service_healthy
@@ -27,6 +27,19 @@ services:
       DATABASE_URL: postgresql://admin:admin@db:5432/posdb
     ports:
       - '3000:3000'
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: src/frontend/Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:3000/api
+      Node_ENV: development
     restart: unless-stopped
 
 volumes:
