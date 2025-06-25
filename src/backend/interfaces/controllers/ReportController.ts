@@ -14,7 +14,11 @@ export class ReportController {
      * @param res La réponse HTTP.
      */
     static async consolidated(req: Request, res: Response) {
-        const data = await reportService.getConsolidatedReport();
+        const { startDate, endDate } = req.query;
+        const data = await reportService.getConsolidatedReport({
+            startDate: startDate ? new Date(startDate as string) : undefined,
+            endDate: endDate ? new Date(endDate as string) : undefined,
+        });
         res.json(data);
     }
 }

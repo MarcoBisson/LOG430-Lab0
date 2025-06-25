@@ -41,7 +41,7 @@ export class LogisticsService {
         if (store.type !== 'SALES')
             throw new Error('Invalid store type for replenishment');
 
-        await this.logisticRepo.decrementCentralStock(req.productId, req.quantity);
+        await this.logisticRepo.decrementCentralStock(req.storeId, req.productId, req.quantity);
         await this.storeRepo.incrementStoreStock(req.storeId, req.productId, req.quantity);
 
         return this.logisticRepo.updateReplenishmentStatus(requestId, 'APPROVED');

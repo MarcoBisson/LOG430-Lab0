@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, StoreStock, StoreType } from '@prisma/client';
 import { ReplenishmentRequestStatus } from '@prisma/client';
 import { ILogisticsRepository } from '../../domain/repositories/ILogisticsRepository';
 import { Product } from '../../domain/entities/Product';
@@ -8,16 +8,26 @@ const prisma = new PrismaClient();
 
 export class PrismaLogisticsRepository implements ILogisticsRepository {
     async findAllCentralStock(): Promise<{ productId: number; stock: number }[]> {
-        const products = await prisma.product.findMany({ select: { id: true, stock: true } });
-        return products.map(p => ({ productId: p.id, stock: p.stock }));
+        const storeStocks = await prisma.storeStock.findMany({
+            where: {
+                store:{
+                    type: StoreType.LOGISTICS
+                }
+              },
+              select: {
+                productId:true,
+                quantity: true,
+              },
+        })
+        return storeStocks.map(p => ({ productId: p.productId, stock: p.quantity }));
     }
 
-    async decrementCentralStock(productId: number, qty: number): Promise<Product> {
-        return prisma.product.update({ where: { id: productId }, data: { stock: { decrement: qty } } });
+    async decrementCentralStock(storeId: number, productId: number, qty: number): Promise<StoreStock> {
+        return prisma.storeStock.update({ where: { storeId_productId:{storeId,productId} }, data: { quantity: { decrement: qty } } });
     }
 
-    async incrementCentralStock(productId: number, qty: number): Promise<Product> {
-        return prisma.product.update({ where: { id: productId }, data: { stock: { increment: qty } } });
+    async incrementCentralStock(storeId: number, productId: number, qty: number): Promise<StoreStock> {
+        return prisma.storeStock.update({ where: { storeId_productId:{storeId,productId} }, data: { quantity: { increment: qty } } });
     }
 
     async createReplenishmentRequest(storeId: number, productId: number, quantity: number): Promise<ReplenishmentRequest> {

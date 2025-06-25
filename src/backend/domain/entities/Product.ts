@@ -5,6 +5,5 @@ export class Product {
         public price: number,
         public description: string | null,
         public category: string | null,
-        public stock: number
     ) { }
 }

@@ -16,6 +16,9 @@
     "studio": "prisma studio",
     "db-reset": "prisma migrate reset"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { ISaleRepository } from '../../domain/repositories/ISaleRepository';
 import { Sale } from '../../domain/entities/Sale';
 import { SaleItem } from '../../domain/entities/SaleItem';
+import { Store } from '../../domain/entities/Store';
 
 const prisma = new PrismaClient();
 
@@ -28,8 +29,14 @@ export class PrismaSaleRepository implements ISaleRepository {
         await prisma.sale.delete({ where: { id } });
     }
 
-    async groupSalesByStore(): Promise<{ storeId: number; totalQuantity: number }[]> {
+    async groupSalesByStore(startDate?: Date, endDate?: Date): Promise<{ storeId: number; totalQuantity: number }[]> {
         const sales = await prisma.sale.findMany({
+            where: {
+                date: {
+                    gte: startDate,
+                    lte: endDate,
+                },
+            },
             select: {
                 storeId: true,
                 saleItems: { select: { quantity: true } }
@@ -48,8 +55,22 @@ export class PrismaSaleRepository implements ISaleRepository {
         }));
     }
 
-    async getTopProducts(limit: number): Promise<{ productId: number; totalQuantity: number }[]> {
-        const items = await prisma.saleItem.findMany({ select: { productId: true, quantity: true } });
+    async getTopProducts(limit: number,startDate?: Date, endDate?: Date): Promise<{ productId: number; totalQuantity: number }[]> {
+
+        const items = await prisma.saleItem.findMany({ 
+            where: {
+                sale: {
+                    date: {
+                        gte: startDate,
+                        lte: endDate,
+                    },
+                },
+            },
+            select: { 
+                productId: true, 
+                quantity: true 
+            } 
+        });
 
         const map: Record<number, number> = {};
         for (const item of items) {

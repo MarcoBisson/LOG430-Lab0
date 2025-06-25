@@ -11,7 +11,7 @@ export class ProductService {
      */
     async listProducts(): Promise<Product[]> {
         return (await this.productRepo.listProducts()).map(
-            p => new Product(p.id, p.name, p.price, p.description, p.category, p.stock)
+            p => new Product(p.id, p.name, p.price, p.description, p.category)
         );
     }
 
@@ -25,16 +25,14 @@ export class ProductService {
         price: number;
         description?: string;
         category?: string;
-        stock: number;
     }): Promise<Product> {
         const p = await this.productRepo.createProduct({
             name: input.name,
             price: input.price,
             description: input.description ?? null,
             category: input.category ?? null,
-            stock: input.stock
         });
-        return new Product(p.id, p.name, p.price, p.description, p.category, p.stock);
+        return new Product(p.id, p.name, p.price, p.description, p.category);
     }
 
     /**
@@ -44,7 +42,7 @@ export class ProductService {
      */
     async getProductById(id: number): Promise<Product | null> {
         const p = await this.productRepo.findProductById(id);
-        return p ? new Product(p.id, p.name, p.price, p.description, p.category, p.stock) : null;
+        return p ? new Product(p.id, p.name, p.price, p.description, p.category) : null;
     }
 
     /**
@@ -55,7 +53,7 @@ export class ProductService {
     async getProductsByName(name: string): Promise<Product[]> {
         const products = await this.productRepo.findProductsByName(name);
         return products.map(
-            p => new Product(p.id, p.name, p.price, p.description, p.category, p.stock)
+            p => new Product(p.id, p.name, p.price, p.description, p.category)
         );
     }
 
@@ -67,7 +65,7 @@ export class ProductService {
     async getProductsByCategory(category: string): Promise<Product[]> {
         const products = await this.productRepo.findProductsByCategory(category);
         return products.map(
-            p => new Product(p.id, p.name, p.price, p.description, p.category, p.stock)
+            p => new Product(p.id, p.name, p.price, p.description, p.category)
         );
     }
 
@@ -82,7 +80,7 @@ export class ProductService {
         data: { name?: string; price?: number; description?: string; category?: string }
     ): Promise<Product> {
         const p = await this.productRepo.updateProduct(id, data);
-        return new Product(p.id, p.name, p.price, p.description, p.category, p.stock);
+        return new Product(p.id, p.name, p.price, p.description, p.category);
     }
 
     /**
@@ -93,4 +91,16 @@ export class ProductService {
     async deleteProduct(id: number): Promise<void> {
         const p = await this.productRepo.deleteProduct(id);
     }
+
+    // /**
+    //  * Recherche des produits par catégorie.
+    //  * @param storeId La catégorie des produits à rechercher.
+    //  * @returns Une liste de produits correspondant à la catégorie recherchée.
+    //  */
+    // async getProductsByStore(storeId: number): Promise<Product[]> {
+    //     const products = await this.productRepo.findProductsByCategory(category);
+    //     return products.map(
+    //         p => new Product(p.id, p.name, p.price, p.description, p.category)
+    //     );
+    // }
 }

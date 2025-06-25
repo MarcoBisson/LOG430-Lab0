@@ -11,7 +11,6 @@ export interface IProductRepository {
         price: number;
         description?: string | null;
         category?: string | null;
-        stock: number;
     }): Promise<Product>;
 
     /**

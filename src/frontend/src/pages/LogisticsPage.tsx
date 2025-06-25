@@ -5,6 +5,7 @@ import { ReplenishmentRequestDTO } from '../DTOs/ReplenishmentRequestDTO';
 import { getStoreStock } from '../APIs/InventoryAPI';
 import { getCentralStock } from '../APIs/InventoryAPI';
 import { requestReplenishment, approveReplenishment, getAlerts } from '../APIs/LogisticsAPI';
+import styles from './LogisticsPage.module.css';
 
 export default function LogisticsPage() {
     const [central, setCentral] = useState<StockDTO[]>([]);
@@ -53,86 +54,92 @@ export default function LogisticsPage() {
     return (
         <div>
             <h1>Logistique</h1>
+            <div className={styles.page}>
+                <section>
+                    <h2>Stock central</h2>
+                    <ul>
+                        {central.map(c => (
+                            <li key={c.productId}>
+                                Produit #{c.productId} : {c.stock}
+                            </li>
+                        ))}
+                    </ul>
+                </section>
 
-            <section>
-                <h2>Stock central</h2>
-                <ul>
-                    {central.map(c => (
-                        <li key={c.productId}>
-                            Produit #{c.productId} : {c.stock}
-                        </li>
-                    ))}
-                </ul>
-            </section>
+                <section>
+                    <h2>Stock magasin</h2>
+                    <div>
+                        Magasin ID:{' '}
+                        <input
+                            type="number"
+                            value={storeId}
+                            onChange={e => setStoreId(+e.target.value)}
+                        />
+                    </div>
+                    <ul>
+                        {storeStock.map(s => (
+                            <li key={`${s.storeId}-${s.productId}`}>
+                                Produit #{s.productId} : {s.quantity}
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+                
 
-            <section>
-                <h2>Stock magasin</h2>
-                <div>
-                    Magasin ID:{' '}
-                    <input
-                        type="number"
-                        value={storeId}
-                        onChange={e => setStoreId(+e.target.value)}
-                    />
-                </div>
-                <ul>
-                    {storeStock.map(s => (
-                        <li key={`${s.storeId}-${s.productId}`}>
-                            Produit #{s.productId} : {s.quantity}
-                        </li>
-                    ))}
-                </ul>
-            </section>
+                <div className={styles.actions}>
+                    <section>
+                        <h2>Nouvelle demande</h2>
+                        <div>
+                            Produit ID:{' '}
+                            <input
+                                type="number"
+                                value={productId}
+                                onChange={e => setProductId(+e.target.value)}
+                            />
+                            Quantité:{' '}
+                            <input
+                                type="number"
+                                value={quantity}
+                                onChange={e => setQuantity(+e.target.value)}
+                            />
+                            <button onClick={handleRequest}>Demander</button>
+                        </div>
+                    </section>
 
-            <section>
-                <h2>Nouvelle demande</h2>
-                <div>
-                    Produit ID:{' '}
-                    <input
-                        type="number"
-                        value={productId}
-                        onChange={e => setProductId(+e.target.value)}
-                    />
-                    Quantité:{' '}
-                    <input
-                        type="number"
-                        value={quantity}
-                        onChange={e => setQuantity(+e.target.value)}
-                    />
-                    <button onClick={handleRequest}>Demander</button>
-                </div>
-            </section>
+                    <section>
+                        <h2>Requêtes en attente</h2>
+                        {/* s’il existe un endpoint listant les requêtes, sinon 
+                    utilisez requests[] si vous l’avez peuplé */}
+                        {requests.length === 0
+                            ? <p>Aucune requête en attente.</p>
+                            : (
+                                <ul>
+                                    {requests.map(r => (
+                                        <li key={r.id}>
+                                            Req#{r.id} – Prod#{r.productId} x{r.quantity} –
+                                            <button onClick={() => handleApprove(r.id)}>Approuver</button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                    </section>
 
-            <section>
-                <h2>Requêtes en attente</h2>
-                {/* s’il existe un endpoint listant les requêtes, sinon 
-            utilisez requests[] si vous l’avez peuplé */}
-                {requests.length === 0
-                    ? <p>Aucune requête en attente.</p>
-                    : (
+                    <section>
+                        <h2>Alertes rupture</h2>
                         <ul>
-                            {requests.map(r => (
-                                <li key={r.id}>
-                                    Req#{r.id} – Prod#{r.productId} x{r.quantity} –
-                                    <button onClick={() => handleApprove(r.id)}>Approuver</button>
+                            {alerts.map(a => (
+                                <li key={`${a.storeId}-${a.productId}`}>
+                                    Magasin #{a.storeId}, Produit #{a.productId}: {a.quantity}
                                 </li>
                             ))}
                         </ul>
-                    )}
-            </section>
+                    </section>
+                </div>
 
-            <section>
-                <h2>Alertes rupture</h2>
-                <ul>
-                    {alerts.map(a => (
-                        <li key={`${a.storeId}-${a.productId}`}>
-                            Magasin #{a.storeId}, Produit #{a.productId}: {a.quantity}
-                        </li>
-                    ))}
-                </ul>
-            </section>
-
-            {message && <p>{message}</p>}
+                
+                {message && <p>{message}</p>}
+            </div>
+            
         </div>
     );
 }

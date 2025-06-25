@@ -10,7 +10,6 @@ export class PrismaProductRepository implements IProductRepository {
         price: number;
         description?: string | null;
         category?: string | null;
-        stock: number;
     }): Promise<Product> {
         return prisma.product.create({ data });
     }

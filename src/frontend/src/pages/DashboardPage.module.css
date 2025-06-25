@@ -1,0 +1,8 @@
+.date{
+    margin: 20px;
+}
+
+.page{
+    display: flex;
+    justify-content: space-evenly;
+}

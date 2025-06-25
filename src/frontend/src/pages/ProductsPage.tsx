@@ -1,14 +1,24 @@
 import { useEffect, useState } from 'react';
 import { ProductDTO } from '../DTOs/ProductDTO';
 import { getProducts, searchProductsByName, searchProductsByCategory, createProduct, updateProduct, deleteProduct } from '../APIs/ProductAPI';
+import styles from './ProductPage.module.css'
+import { EditProductModal } from '../components/EditProductModal';
+import { StoreStockDTO } from '../DTOs/StoreStockDTO';
+import { getStoreStock } from '../APIs/InventoryAPI';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<ProductDTO[]>([]);
+    const [storeStock, setStoreStock] = useState<StoreStockDTO[]>([]);
+    const [storeId, setStoreId] = useState(1);
     const [nameFilter, setNameFilter] = useState('');
     const [catFilter, setCatFilter] = useState('');
+    const [productBeingEdited, setProductBeingEdited] = useState<ProductDTO | null>(null);
 
     const fetchAll = async () => setProducts(await getProducts());
-    useEffect(() => { fetchAll(); }, []);
+    useEffect(() => { 
+        getStoreStock(storeId).then(setStoreStock);
+        fetchAll(); 
+    }, [storeId]);
 
     const handleSearch = async () => {
         if (nameFilter) setProducts(await searchProductsByName(nameFilter));
@@ -19,6 +29,15 @@ export default function ProductsPage() {
     return (
         <div>
             <h1>Produits</h1>
+            <h2>Stock magasin</h2>
+                    <div>
+                        Magasin ID:{' '}
+                        <input
+                            type="number"
+                            value={storeId}
+                            onChange={e => setStoreId(+e.target.value)}
+                        />
+                    </div>
             <div>
                 <input
                     placeholder="Nom..."
@@ -42,24 +61,30 @@ export default function ProductsPage() {
             </div>
             <ul>
                 {products.map(p => (
-                    <li key={p.id}>
-                        {p.name} — {p.price}€ — stock: {p.stock}
-                        <button onClick={async () => {
-                            const price = parseFloat(prompt('Nouveau prix', `${p.price}`) || '');
-                            if (!isNaN(price)) {
-                                await updateProduct(p.id, { price });
-                                fetchAll();
-                            }
-                        }}>✎</button>
-                        <button onClick={async () => {
-                            if (confirm('Supprimer ce produit ?')) {
-                                await deleteProduct(p.id);
-                                fetchAll();
-                            }
-                        }}>🗑</button>
-                    </li>
+                    <li className={styles.table} key={p.id}>
+                    {p.name} — {p.price}€ — stock: {p.stock}
+                    <button onClick={() => setProductBeingEdited(p)}>✎</button>
+                    <button onClick={async () => {
+                      if (confirm('Supprimer ce produit ?')) {
+                        await deleteProduct(p.id);
+                        fetchAll();
+                      }
+                    }}>🗑</button>
+                  </li>
                 ))}
             </ul>
+            {productBeingEdited && (
+                <EditProductModal
+                    product={productBeingEdited}
+                    onSave={async (data) => {
+                    await updateProduct(productBeingEdited.id, data);
+                    setProductBeingEdited(null);
+                    fetchAll();
+                    }}
+                    onClose={() => setProductBeingEdited(null)}
+                />
+            )}
         </div>
+        
     );
 }

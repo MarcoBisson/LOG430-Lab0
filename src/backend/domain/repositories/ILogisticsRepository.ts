@@ -1,4 +1,4 @@
-import { ReplenishmentRequestStatus } from '@prisma/client';
+import { ReplenishmentRequestStatus, StoreStock } from '@prisma/client';
 import { Product } from '../entities/Product';
 import { ReplenishmentRequest } from '../entities/ReplenishmentRequest';
 
@@ -16,7 +16,7 @@ export interface ILogisticsRepository {
      * @param qty - La quantité à décrémenter.
      * @returns Le produit mis à jour.
      */
-    decrementCentralStock(productId: number, qty: number): Promise<Product>;
+    decrementCentralStock(storeId: number, productId: number, qty: number): Promise<StoreStock>;
 
     /**
      * Incrémente le stock central d'un produit.
@@ -24,7 +24,7 @@ export interface ILogisticsRepository {
      * @param qty - La quantité à incrémenter.
      * @returns Le produit mis à jour.
      */
-    incrementCentralStock(productId: number, qty: number): Promise<Product>;
+    incrementCentralStock(storeId: number, productId: number, qty: number): Promise<StoreStock>;
 
     /**
      * Crée une demande de réapprovisionnement pour un produit dans un magasin.

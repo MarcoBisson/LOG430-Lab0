@@ -18,7 +18,6 @@ model Product {
   name           String
   price          Float
   description    String?
-  stock          Int
   category       String?
   saleItems      SaleItem[]
   storeStocks    StoreStock[]

@@ -10,6 +10,15 @@ export async function getProducts(): Promise<ProductDTO[]> {
 }
 
 /**
+ * Fetches tous les produits disponibles pour un store dans la base de données.
+ * @param id L'identifiant du produit à récupérer.
+ * @returns Une promesse qui résout un tableau de ProductDTO.
+ */
+export async function getProductsByStoreId(storeId: number): Promise<ProductDTO[]> {
+    return fetch(`${API_BASE}/products/store/${encodeURIComponent(storeId)}`).then(r => r.json());
+}
+
+/**
  * Récupère un produit spécifique par son ID.
  * @param id L'identifiant du produit à récupérer.
  * @returns Une promesse qui résout le ProductDTO correspondant.

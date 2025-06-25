@@ -75,4 +75,14 @@ export class ProductController {
         await productService.deleteProduct(+req.params.id);
         res.status(204).end();
     }
+
+     /**
+     * Recherche des produits par store ID.
+     * @param req La requête HTTP contenant l'ID du store.
+     * @param res La réponse HTTP.
+     */
+     static async getByStore(req: Request, res: Response) {
+        const p = await productService.getProductById(+req.params.id);
+        p ? res.json(p) : res.status(404).json({ error: 'Not found' });
+    }
 }

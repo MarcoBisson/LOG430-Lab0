@@ -9,5 +9,6 @@ productRoutes.get('/search/category/:category', ProductController.getByCategory)
 productRoutes.post('/', ProductController.create);
 productRoutes.put('/:id', ProductController.update);
 productRoutes.delete('/:id', ProductController.delete);
+productRoutes.get('/store/:id', ProductController.getByStore);
 
 export default productRoutes;
