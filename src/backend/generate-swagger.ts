@@ -17,10 +17,10 @@ const options: swaggerJsdoc.Options = {
 const swaggerSpec = swaggerJsdoc(options);
 
 // Écriture au format JSON
-fs.writeFileSync(path.resolve(__dirname, '../swagger.json'), JSON.stringify(swaggerSpec, null, 2));
+fs.writeFileSync(path.resolve(__dirname, 'swagger.json'), JSON.stringify(swaggerSpec, null, 2));
 
 // Écriture au format YAML
 const yamlSpec = yaml.dump(swaggerSpec);
-fs.writeFileSync(path.resolve(__dirname, '../swagger.yaml'), yamlSpec);
+fs.writeFileSync(path.resolve(__dirname, 'swagger.yaml'), yamlSpec);
 
 console.log('✅ Swagger documentation generated in swagger.json and swagger.yaml');

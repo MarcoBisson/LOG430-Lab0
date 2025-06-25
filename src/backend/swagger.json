@@ -1,0 +1,921 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Documentation",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/stock/central": {
+      "get": {
+        "summary": "Récupère le stock central",
+        "tags": [
+          "Stock"
+        ],
+        "responses": {
+          "200": {
+            "description": "Stock central récupéré avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductStock"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stock/store/{storeId}": {
+      "get": {
+        "summary": "Récupère le stock d’un magasin spécifique",
+        "tags": [
+          "Stock"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "storeId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID du magasin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stock du magasin récupéré avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductStock"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Magasin introuvable"
+          }
+        }
+      }
+    },
+    "/api/logistics/replenishment/request": {
+      "post": {
+        "summary": "Enregistre une demande de réapprovisionnement",
+        "tags": [
+          "Logistics"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "storeId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "productId": {
+                    "type": "integer",
+                    "example": 42
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "example": 50
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Demande créée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplenishmentRequest"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur lors de la création",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logistics/replenishment/approve/{id}": {
+      "post": {
+        "summary": "Approuve une demande de réapprovisionnement",
+        "tags": [
+          "Logistics"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "description": "ID de la demande à approuver"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Demande approuvée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplenishmentRequest"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur lors de l’approbation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logistics/alerts": {
+      "get": {
+        "summary": "Alerte sur les stocks critiques",
+        "tags": [
+          "Logistics"
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des alertes de stock critique",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "productId": {
+                        "type": "integer",
+                        "example": 42
+                      },
+                      "productName": {
+                        "type": "string",
+                        "example": "Produit A"
+                      },
+                      "stock": {
+                        "type": "integer",
+                        "example": 3
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logistics/replenishments": {
+      "get": {
+        "summary": "Liste toutes les demandes de réapprovisionnement",
+        "tags": [
+          "Logistics"
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des demandes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReplenishmentRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/": {
+      "get": {
+        "summary": "Récupère la liste complète des produits",
+        "tags": [
+          "Products"
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des produits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{id}": {
+      "get": {
+        "summary": "Récupère un produit par son ID",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "description": "ID du produit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Détails du produit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Produit non trouvé"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprime un produit par son ID",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "description": "ID du produit à supprimer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Produit supprimé avec succès (pas de contenu)"
+          },
+          "404": {
+            "description": "Produit non trouvé"
+          }
+        }
+      }
+    },
+    "/api/products/search/name/{name}": {
+      "get": {
+        "summary": "Recherche des produits par nom",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Nom à rechercher"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Produits correspondant au nom",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/search/category/{category}": {
+      "get": {
+        "summary": "Recherche des produits par catégorie",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "category",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Catégorie à rechercher"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Produits correspondant à la catégorie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/store/{id}": {
+      "post": {
+        "summary": "Crée un nouveau produit dans un magasin",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "description": "ID du magasin"
+          }
+        ],
+        "requestBody": {
+          "description": "Données du produit à créer",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Produit créé avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide"
+          }
+        }
+      },
+      "get": {
+        "summary": "Récupère tous les produits d’un magasin",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "description": "ID du magasin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des produits en stock dans le magasin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/store/{storeId}/{productId}": {
+      "put": {
+        "summary": "Met à jour un produit existant dans un magasin",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "storeId",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "description": "ID du magasin"
+          },
+          {
+            "in": "path",
+            "name": "productId",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "description": "ID du produit"
+          }
+        ],
+        "requestBody": {
+          "description": "Données à mettre à jour",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Produit mis à jour",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide"
+          },
+          "404": {
+            "description": "Produit non trouvé"
+          }
+        }
+      }
+    },
+    "/api/reports/consolidated": {
+      "get": {
+        "summary": "Récupère un rapport consolidé des ventes, produits et stocks.",
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "description": "Date de début de l'intervalle (format ISO 8601)"
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "description": "Date de fin de l'intervalle (format ISO 8601)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rapport consolidé retourné avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Paramètres invalides",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Date invalide"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/returns": {
+      "post": {
+        "summary": "Enregistre un retour de produit dans le système.",
+        "tags": [
+          "Returns"
+        ],
+        "requestBody": {
+          "description": "Détails du retour, notamment l'ID de la vente",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "saleId": {
+                    "type": "integer",
+                    "example": 123
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Retour traité avec succès, pas de contenu retourné"
+          },
+          "400": {
+            "description": "Requête invalide ou paramètres manquants",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "ID de vente invalide ou manquant"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sales": {
+      "post": {
+        "summary": "Enregistre une vente dans le système.",
+        "tags": [
+          "Sales"
+        ],
+        "requestBody": {
+          "description": "Détails de la vente, incluant l'ID du magasin et les articles vendus",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "storeId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "productId": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "example": 3
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Vente enregistrée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sale"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide"
+          }
+        }
+      }
+    },
+    "/api/sales/{id}": {
+      "get": {
+        "summary": "Récupère une vente par son ID",
+        "tags": [
+          "Sales"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "description": "ID de la vente"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Détails de la vente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sale"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Vente non trouvée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CartItem": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "example": 42
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 3
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Chaise ergonomique"
+          },
+          "price": {
+            "type": "number",
+            "example": 89.99
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Chaise en bois avec dossier confortable"
+          },
+          "category": {
+            "type": "string",
+            "nullable": true,
+            "example": "Mobilier"
+          }
+        }
+      },
+      "ProductStock": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Product"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "stock": {
+                "type": "integer",
+                "example": 100
+              }
+            }
+          }
+        ]
+      },
+      "ReplenishmentRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 12
+          },
+          "storeId": {
+            "type": "integer",
+            "example": 3
+          },
+          "productId": {
+            "type": "integer",
+            "example": 7
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 50
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED"
+            ],
+            "example": "PENDING"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-06-24T14:32:00Z"
+          }
+        }
+      },
+      "Sale": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-06-24T12:30:00Z"
+          },
+          "storeId": {
+            "type": "integer",
+            "example": 5
+          },
+          "saleItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaleItem"
+            }
+          }
+        }
+      },
+      "SaleItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 101
+          },
+          "saleId": {
+            "type": "integer",
+            "description": "ID de la vente à laquelle l'article appartient",
+            "example": 45
+          },
+          "productId": {
+            "type": "integer",
+            "description": "ID du produit vendu",
+            "example": 7
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantité vendue",
+            "example": 3
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Prix unitaire au moment de la vente",
+            "example": 19.99
+          }
+        }
+      },
+      "Store": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Magasin Sherbrooke"
+          },
+          "address": {
+            "type": "string",
+            "example": "123 rue King Ouest"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "SALES",
+              "LOGISTICS",
+              "HEADQUARTERS"
+            ],
+            "example": "SALES"
+          }
+        }
+      },
+      "StoreStock": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 10
+          },
+          "storeId": {
+            "type": "integer",
+            "example": 3
+          },
+          "productId": {
+            "type": "integer",
+            "example": 42
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 75
+          }
+        }
+      }
+    }
+  },
+  "tags": []
+}
