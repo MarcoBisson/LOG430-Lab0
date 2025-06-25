@@ -9,6 +9,7 @@
     "build": "npm run build:backend && npm run build:frontend",
     "start:backend": "ts-node src/backend/server.ts",
     "start:frontend": "vite",
+    "generate:swagger": "ts-node src/backend/generate-swagger.ts",
     "preview:frontend": "vite preview",
     "test": "jest --coverage",
     "lint": "eslint . --ext .ts",
@@ -27,9 +28,12 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jest": "^29.5.14",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.15.21",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.33.0",
     "@typescript-eslint/parser": "^8.33.0",
     "@vitejs/plugin-react": "^4.4.1",
@@ -51,8 +55,12 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "inquirer": "^12.6.3",
+    "js-yaml": "^4.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.2"
+    "react-router-dom": "^7.6.2",
+    "react-toastify": "^11.0.5",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   }
 }

@@ -52,7 +52,7 @@ export class ProductController {
      * @param res La réponse HTTP.
      */
     static async create(req: Request, res: Response) {
-        const p = await productService.createProduct(req.body);
+        const p = await productService.createProduct(+req.params.id, req.body);
         res.status(201).json(p);
     }
 
@@ -62,7 +62,7 @@ export class ProductController {
      * @param res La réponse HTTP.
      */
     static async update(req: Request, res: Response) {
-        const p = await productService.updateProduct(+req.params.id, req.body);
+        const p = await productService.updateProduct(+req.params.productId,+req.params.storeId, req.body);
         res.json(p);
     }
 
@@ -82,7 +82,7 @@ export class ProductController {
      * @param res La réponse HTTP.
      */
      static async getByStore(req: Request, res: Response) {
-        const p = await productService.getProductById(+req.params.id);
+        const p = await productService.getProductsByStore(+req.params.id);
         p ? res.json(p) : res.status(404).json({ error: 'Not found' });
     }
 }

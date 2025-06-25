@@ -29,6 +29,15 @@ export async function approveReplenishment(id: number): Promise<ReplenishmentReq
 }
 
 /**
+ * Recupere la liste des requetes de réapprovisionnement
+ * @returns La liste des requetes de réapprovisionnement.
+ */
+export async function getReplenishments(): Promise<ReplenishmentRequestDTO[]> {
+    return fetch(`${API_BASE}/logistics/replenishment`).then(res => res.json());
+}
+
+
+/**
  * Récupère toutes les alertes de stock pour les magasins.
  * @returns Un tableau d'objets StoreStockDTO contenant les alertes de stock.
  */

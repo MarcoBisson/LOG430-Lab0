@@ -6,6 +6,7 @@ import returnRoutes from './interfaces/routes/ReturnRoutes';
 import reportRoutes from './interfaces/routes/ReportRoutes';
 import logisticsRoutes from './interfaces/routes/LogisticsRoutes';
 import inventoryRoutes from './interfaces/routes/InventoryRoutes';
+import { setupSwagger } from './swagger'
 
 const app = express();
 app.use(cors());
@@ -18,4 +19,9 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/logistics', logisticsRoutes);
 app.use('/api/stock', inventoryRoutes);
 
-app.listen(3000, () => console.log('REST API running on http://localhost:3000'));
+setupSwagger(app)
+
+app.listen(3000, () => {
+    console.log('REST API running on http://localhost:3000')
+    console.log('Swagger disponible sur http://localhost:3000/api-docs')
+});

@@ -4,8 +4,9 @@ import { StoreStockDTO } from '../DTOs/StoreStockDTO';
 import { ReplenishmentRequestDTO } from '../DTOs/ReplenishmentRequestDTO';
 import { getStoreStock } from '../APIs/InventoryAPI';
 import { getCentralStock } from '../APIs/InventoryAPI';
-import { requestReplenishment, approveReplenishment, getAlerts } from '../APIs/LogisticsAPI';
+import { requestReplenishment, approveReplenishment, getAlerts, getReplenishments } from '../APIs/LogisticsAPI';
 import styles from './LogisticsPage.module.css';
+import { toast } from 'react-toastify';
 
 export default function LogisticsPage() {
     const [central, setCentral] = useState<StockDTO[]>([]);
@@ -15,39 +16,37 @@ export default function LogisticsPage() {
     const [productId, setProductId] = useState(0);
     const [quantity, setQuantity] = useState(0);
     const [requests, setRequests] = useState<ReplenishmentRequestDTO[]>([]);
-    const [message, setMessage] = useState('');
 
     // au chargement : central + alertes + stock magasin + requêtes
     useEffect(() => {
         getCentralStock().then(setCentral);
         getAlerts().then(setAlerts);
         getStoreStock(storeId).then(setStoreStock);
-        // si vous avez un endpoint pour lister les requests, appelez-le ici :
-        // getPendingRequests().then(setRequests);
+        getReplenishments().then(setRequests);
     }, [storeId]);
 
     const handleRequest = async () => {
         try {
             const r = await requestReplenishment(storeId, productId, quantity);
-            setMessage(`Demande #${r.id} créée`);
+            toast.success(`Demande #${r.id} créée`);
             setAlerts(await getAlerts());
             setStoreStock(await getStoreStock(storeId));
-            // setRequests(await getPendingRequests());
+            setRequests(await getReplenishments());
         } catch (e: any) {
-            setMessage(`Erreur demande: ${e.message}`);
+            toast.error(`Erreur demande: ${e.message}`);
         }
     };
 
     const handleApprove = async (reqId: number) => {
         try {
             await approveReplenishment(reqId);
-            setMessage(`Demande #${reqId} approuvée`);
+            toast.success(`Demande #${reqId} approuvée`)
             setCentral(await getCentralStock());
             setStoreStock(await getStoreStock(storeId));
             setAlerts(await getAlerts());
-            // setRequests(await getPendingRequests());
+            setRequests(await getReplenishments());
         } catch (e: any) {
-            setMessage(`Erreur approbation: ${e.message}`);
+            toast.error(`Erreur approbation: ${e.message}`)
         }
     };
 
@@ -91,11 +90,19 @@ export default function LogisticsPage() {
                         <h2>Nouvelle demande</h2>
                         <div>
                             Produit ID:{' '}
-                            <input
-                                type="number"
+                            <select
                                 value={productId}
                                 onChange={e => setProductId(+e.target.value)}
-                            />
+                            >
+                                <option value="">-- Sélectionnez un produit --</option>
+                                {
+                                    storeStock.map((p)=>(
+                                        <option key={p.productId} value={p.productId}>
+                                            {p.productId}
+                                        </option>
+                                    ))
+                                }
+                            </select>
                             Quantité:{' '}
                             <input
                                 type="number"
@@ -108,16 +115,16 @@ export default function LogisticsPage() {
 
                     <section>
                         <h2>Requêtes en attente</h2>
-                        {/* s’il existe un endpoint listant les requêtes, sinon 
-                    utilisez requests[] si vous l’avez peuplé */}
                         {requests.length === 0
                             ? <p>Aucune requête en attente.</p>
                             : (
                                 <ul>
                                     {requests.map(r => (
                                         <li key={r.id}>
-                                            Req#{r.id} – Prod#{r.productId} x{r.quantity} –
-                                            <button onClick={() => handleApprove(r.id)}>Approuver</button>
+                                            <span>
+                                                Req#{r.id} – Magasin ID# {r.storeId} – Produit #{r.productId} – Quantité : {r.quantity} – Status : {r.status}
+                                            </span>
+                                            <button onClick={() => handleApprove(r.id)} hidden={r.status == 'APPROVED'}>Approuver</button>
                                         </li>
                                     ))}
                                 </ul>
@@ -135,9 +142,6 @@ export default function LogisticsPage() {
                         </ul>
                     </section>
                 </div>
-
-                
-                {message && <p>{message}</p>}
             </div>
             
         </div>

@@ -1,5 +1,4 @@
-import { ReplenishmentRequestStatus, StoreStock } from '@prisma/client';
-import { Product } from '../entities/Product';
+import { ReplenishmentRequestStatus, Store, StoreStock } from '@prisma/client';
 import { ReplenishmentRequest } from '../entities/ReplenishmentRequest';
 
 
@@ -48,6 +47,18 @@ export interface ILogisticsRepository {
      * @returns La demande de réapprovisionnement trouvée, ou null si elle n'existe pas.
      */
     getReplenishmentRequest(id: number): Promise<ReplenishmentRequest | null>;
+
+    /**
+     * Récupère toutes les demandes de réapprovisionnement.
+     * @returns La liste des demandes de réapprovisionnement.
+     */
+    getReplenishmentRequests(): Promise<ReplenishmentRequest[]>;
+
+    /**
+     * Récupère tous les magasins de type logistique.
+     * @returns La liste des magasins de type logistique.
+     */
+    getLogisticStores(): Promise<Store[]>;
 
     /**
      * Met à jour le statut d'une demande de réapprovisionnement.

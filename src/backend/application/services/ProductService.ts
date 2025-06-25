@@ -1,5 +1,5 @@
 
-import { Product } from '../../domain/entities/Product';
+import { Product, ProductStock } from '../../domain/entities/Product';
 import { IProductRepository } from '../../domain/repositories/IProductRepository';
 
 export class ProductService {
@@ -20,17 +20,21 @@ export class ProductService {
      * @param input Les informations du produit à créer.
      * @returns Une instance de ProductEntity représentant le produit créé.
      */
-    async createProduct(input: {
+    async createProduct(
+        storeId: number,
+        input: {
         name: string;
         price: number;
         description?: string;
         category?: string;
+        stock: number;
     }): Promise<Product> {
-        const p = await this.productRepo.createProduct({
+        const p = await this.productRepo.createProduct(storeId, {
             name: input.name,
             price: input.price,
             description: input.description ?? null,
             category: input.category ?? null,
+            stock: input.stock ?? 0,
         });
         return new Product(p.id, p.name, p.price, p.description, p.category);
     }
@@ -71,16 +75,18 @@ export class ProductService {
 
     /**
      * Met à jour un produit existant.
-     * @param id L'ID du produit à mettre à jour.
+     * @param productId - L'ID du produit à mettre à jour.
+     * @param storeId - L'ID du store où se trouve le produit.
      * @param data Les données à mettre à jour.
      * @returns Une instance de ProductEntity représentant le produit mis à jour.
      */
     async updateProduct(
-        id: number,
-        data: { name?: string; price?: number; description?: string; category?: string }
-    ): Promise<Product> {
-        const p = await this.productRepo.updateProduct(id, data);
-        return new Product(p.id, p.name, p.price, p.description, p.category);
+        productId: number,
+        storeId: number,
+        data: { name?: string; price?: number; description?: string; category?: string; stock: number}
+    ): Promise<ProductStock> {
+        const p = await this.productRepo.updateProduct(productId, storeId, data);
+        return new ProductStock(p.id, p.name, p.price, p.description, p.category, p.stock);
     }
 
     /**
@@ -92,15 +98,15 @@ export class ProductService {
         const p = await this.productRepo.deleteProduct(id);
     }
 
-    // /**
-    //  * Recherche des produits par catégorie.
-    //  * @param storeId La catégorie des produits à rechercher.
-    //  * @returns Une liste de produits correspondant à la catégorie recherchée.
-    //  */
-    // async getProductsByStore(storeId: number): Promise<Product[]> {
-    //     const products = await this.productRepo.findProductsByCategory(category);
-    //     return products.map(
-    //         p => new Product(p.id, p.name, p.price, p.description, p.category)
-    //     );
-    // }
+    /**
+     * Recherche des produits par catégorie.
+     * @param storeId La catégorie des produits à rechercher.
+     * @returns Une liste de produits correspondant à la catégorie recherchée.
+     */
+    async getProductsByStore(storeId: number): Promise<ProductStock[]> {
+        const products = await this.productRepo.findProductsByStore(storeId);
+        return products.map(
+            p => new ProductStock(p.id, p.name, p.price, p.description, p.category, p.stock)
+        );
+    }
 }

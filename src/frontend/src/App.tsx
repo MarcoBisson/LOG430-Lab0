@@ -4,6 +4,7 @@ import SalesPage from './pages/SalesPage';
 import ReturnsPage from './pages/ReturnsPage';
 import DashboardPage from './pages/DashboardPage';
 import LogisticsPage from './pages/LogisticsPage';
+import { ToastContainer } from 'react-toastify';
 
 export default function App() {
   return (
@@ -24,6 +25,9 @@ export default function App() {
           <Route path="/logistics" element={<LogisticsPage />} />
         </Routes>
       </div>
+
+      <ToastContainer position="top-center" theme='colored' autoClose={3000} />
     </Router>
+    
   );
 }

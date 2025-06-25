@@ -1,8 +1,8 @@
 import { PrismaClient, StoreStock, StoreType } from '@prisma/client';
 import { ReplenishmentRequestStatus } from '@prisma/client';
 import { ILogisticsRepository } from '../../domain/repositories/ILogisticsRepository';
-import { Product } from '../../domain/entities/Product';
 import { ReplenishmentRequest } from '../../domain/entities/ReplenishmentRequest';
+import { Store } from '../../domain/entities/Store';
 
 const prisma = new PrismaClient();
 
@@ -44,5 +44,17 @@ export class PrismaLogisticsRepository implements ILogisticsRepository {
 
     async updateReplenishmentStatus(id: number, status: ReplenishmentRequestStatus): Promise<ReplenishmentRequest> {
         return prisma.replenishmentRequest.update({ where: { id }, data: { status } });
+    }
+
+    async getReplenishmentRequests(): Promise<ReplenishmentRequest[]> {
+        return prisma.replenishmentRequest.findMany();
+    }
+
+    async getLogisticStores(): Promise<Store[]> {
+        return prisma.store.findMany({
+            where:{
+                type: StoreType.LOGISTICS
+            }
+        });
     }
 }

@@ -1,4 +1,4 @@
-import { Product } from "../entities/Product";
+import { Product, ProductStock } from "../entities/Product";
 
 export interface IProductRepository {
     /**
@@ -6,12 +6,10 @@ export interface IProductRepository {
      * @param data - Les données du produit à créer.
      * @returns Le produit créé.
      */
-    createProduct(data: {
-        name: string;
-        price: number;
-        description?: string | null;
-        category?: string | null;
-    }): Promise<Product>;
+    createProduct(
+        storeId: number,
+        data: Partial<Pick<ProductStock, 'name' | 'price' | 'description' | 'category'| 'stock'>>
+    ): Promise<Product>;
 
     /**
      * Recherche un produit par son ID.
@@ -42,14 +40,16 @@ export interface IProductRepository {
 
     /**
      * Met à jour un produit avec les données fournies.
-     * @param id - L'ID du produit à mettre à jour.
+     * @param productId - L'ID du produit à mettre à jour.
+     * @param storeId - L'ID du store où se trouve le produit.
      * @param data - Les données à mettre à jour.
      * @returns Le produit mis à jour.
      */
     updateProduct(
-        id: number,
-        data: Partial<Pick<Product, 'name' | 'price' | 'description' | 'category'>>
-    ): Promise<Product>;
+        productId: number,
+        storeId: number,
+        data: Partial<Pick<ProductStock, 'name' | 'price' | 'description' | 'category'| 'stock'>>
+    ): Promise<ProductStock>;
 
     /**
      * Supprime un produit par son ID.
@@ -57,4 +57,11 @@ export interface IProductRepository {
      * @returns Le produit supprimé.
      */
     deleteProduct(id: number): Promise<Product>;
+
+    /**
+     * Recherche des produits par leur store.
+     * @param storeId - L'ID du store.
+     * @returns La liste des produits correspondants.
+     */
+    findProductsByStore(storeId: number): Promise<ProductStock[]>;
 }

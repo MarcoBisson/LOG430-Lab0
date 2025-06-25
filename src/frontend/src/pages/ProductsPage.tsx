@@ -1,22 +1,18 @@
 import { useEffect, useState } from 'react';
 import { ProductDTO } from '../DTOs/ProductDTO';
-import { getProducts, searchProductsByName, searchProductsByCategory, createProduct, updateProduct, deleteProduct } from '../APIs/ProductAPI';
+import { getProducts, searchProductsByName, searchProductsByCategory, createProduct, updateProduct, deleteProduct, getProductsByStoreId } from '../APIs/ProductAPI';
 import styles from './ProductPage.module.css'
 import { EditProductModal } from '../components/EditProductModal';
-import { StoreStockDTO } from '../DTOs/StoreStockDTO';
-import { getStoreStock } from '../APIs/InventoryAPI';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<ProductDTO[]>([]);
-    const [storeStock, setStoreStock] = useState<StoreStockDTO[]>([]);
     const [storeId, setStoreId] = useState(1);
     const [nameFilter, setNameFilter] = useState('');
     const [catFilter, setCatFilter] = useState('');
     const [productBeingEdited, setProductBeingEdited] = useState<ProductDTO | null>(null);
 
-    const fetchAll = async () => setProducts(await getProducts());
+    const fetchAll = async () => getProductsByStoreId(storeId).then(setProducts);
     useEffect(() => { 
-        getStoreStock(storeId).then(setStoreStock);
         fetchAll(); 
     }, [storeId]);
 
@@ -50,34 +46,36 @@ export default function ProductsPage() {
                     onChange={e => setCatFilter(e.target.value)}
                 />
                 <button onClick={handleSearch}>Rechercher</button>
-                <button onClick={async () => {
-                    const name = prompt('Nom du produit');
-                    const price = parseFloat(prompt('Prix') || '0');
-                    if (name) {
-                        await createProduct({ name, price, stock: 0 });
-                        fetchAll();
-                    }
-                }}>Ajouter</button>
+                <button onClick={() => setProductBeingEdited({id:-1 ,name:'', price: 0, stock: 0})}>Ajouter</button>
             </div>
             <ul>
                 {products.map(p => (
                     <li className={styles.table} key={p.id}>
-                    {p.name} — {p.price}€ — stock: {p.stock}
-                    <button onClick={() => setProductBeingEdited(p)}>✎</button>
-                    <button onClick={async () => {
-                      if (confirm('Supprimer ce produit ?')) {
-                        await deleteProduct(p.id);
-                        fetchAll();
-                      }
-                    }}>🗑</button>
-                  </li>
+                        <div>
+                            {p.name} — {p.price}€ — stock: {p.stock}
+                        </div>
+                        <div>
+                            <button onClick={() => setProductBeingEdited(p)}>✎</button>
+                            <button onClick={async () => {
+                            if (confirm('Supprimer ce produit ?')) {
+                                await deleteProduct(p.id);
+                                fetchAll();
+                            }
+                            }}>🗑</button>
+                        </div>
+                        
+                    </li>
                 ))}
             </ul>
             {productBeingEdited && (
                 <EditProductModal
                     product={productBeingEdited}
                     onSave={async (data) => {
-                    await updateProduct(productBeingEdited.id, data);
+                    if (productBeingEdited.id == -1){
+                        await createProduct(storeId, productBeingEdited);
+                    } else {
+                        await updateProduct(productBeingEdited.id, storeId, data);
+                    }
                     setProductBeingEdited(null);
                     fetchAll();
                     }}

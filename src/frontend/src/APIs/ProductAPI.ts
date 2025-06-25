@@ -53,8 +53,8 @@ export async function searchProductsByCategory(cat: string): Promise<ProductDTO[
  * @param cat La catégorie des produits à rechercher.
  * @returns Une promesse qui résout un tableau de ProductDTO correspondant aux produits trouvés.
  */
-export async function createProduct(data: Omit<ProductDTO, 'id'>): Promise<ProductDTO> {
-    return fetch(`${API_BASE}/products`, {
+export async function createProduct(storeId:number, data: Omit<ProductDTO, 'id'>): Promise<ProductDTO> {
+    return fetch(`${API_BASE}/products/${storeId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -67,8 +67,8 @@ export async function createProduct(data: Omit<ProductDTO, 'id'>): Promise<Produ
  * @param data Les données à mettre à jour, excluant l'ID.
  * @returns Une promesse qui résout le ProductDTO mis à jour.
  */
-export async function updateProduct(id: number, data: Partial<Omit<ProductDTO, 'id'>>): Promise<ProductDTO> {
-    return fetch(`${API_BASE}/products/${id}`, {
+export async function updateProduct(productId: number, storeId:number, data: Partial<Omit<ProductDTO, 'id'>>): Promise<ProductDTO> {
+    return fetch(`${API_BASE}/products/store/${storeId}/${productId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)

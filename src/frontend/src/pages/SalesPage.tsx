@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CartItemDTO } from '../DTOs/CartItemDTO';
 import { SaleDTO } from '../DTOs/SaleDTO';
 import { recordSale, getSale } from '../APIs/SaleAPI';
+import { getProductsByStoreId } from '../APIs/ProductAPI';
+import { ProductDTO } from '../DTOs/ProductDTO';
+import { toast } from 'react-toastify';
 
 export default function SalesPage() {
     const [storeId, setStoreId] = useState(1);
@@ -11,10 +14,24 @@ export default function SalesPage() {
     const [createdSale, setCreatedSale] = useState<SaleDTO | null>(null);
     const [loadedSale, setLoadedSale] = useState<SaleDTO | null>(null);
     const [loadSaleId, setLoadSaleId] = useState<number>(0);
-    const [message, setMessage] = useState('');
+    const [products, setProducts] = useState<ProductDTO[]>([]);
 
+    const fetchAll = async () => getProductsByStoreId(storeId).then(setProducts);
+        useEffect(() => { 
+            fetchAll(); 
+        }, [storeId]);
+        
     const addItem = () => {
-        setItems([...items, { productId, quantity }]);
+        const product = products.find((p) => p.id == productId)
+        if (product) {
+            if (product.stock >= quantity)
+                setItems([...items, { storeId, productId, productName: product.name, quantity, unitPrice: product.price }]);
+            else 
+                toast.error(`Stock insuffisant pour le produit: ${product.name}`)
+        } else {
+            toast.error('Produit introuvable ou non disponible')
+        }
+            
         setProductId(0);
         setQuantity(0);
     };
@@ -24,9 +41,9 @@ export default function SalesPage() {
             const sale = await recordSale(storeId, items);
             setCreatedSale(sale);
             setItems([]);
-            setMessage(`Vente créée (ID: ${sale.id})`);
+            toast.success(`Vente créée (ID: ${sale.id})`)
         } catch (e: any) {
-            setMessage(`Erreur création: ${e.message}`);
+            toast.error(`Erreur création: ${e.message}`)
         }
     };
 
@@ -35,7 +52,7 @@ export default function SalesPage() {
             const s = await getSale(loadSaleId);
             setLoadedSale(s);
         } catch (e: any) {
-            setMessage(`Erreur chargement: ${e.message}`);
+            toast.error(`Erreur chargement: ${e.message}`)
             setLoadedSale(null);
         }
     };
@@ -51,16 +68,25 @@ export default function SalesPage() {
                     <input
                         type="number"
                         value={storeId}
-                        onChange={e => setStoreId(+e.target.value)}
+                        onChange={(e) => {
+                            setStoreId(+e.target.value);
+                            setItems([]);
+                        }}
                     />
                 </div>
                 <div>
                     Produit ID:{' '}
-                    <input
-                        type="number"
+                    <select 
                         value={productId}
-                        onChange={e => setProductId(+e.target.value)}
-                    />
+                        onChange={(e) => setProductId(Number(e.target.value))}
+                    >
+                        <option value="">-- Sélectionnez un produit --</option>
+                        {products.map((p) => (
+                            <option key={p.id} value={p.id}>
+                                {p.name}
+                            </option>
+                         ))}
+                    </select>
                     Quantité:{' '}
                     <input
                         type="number"
@@ -77,7 +103,6 @@ export default function SalesPage() {
                     ))}
                 </ul>
                 <button onClick={submitSale}>Valider la vente</button>
-                {message && <p>{message}</p>}
                 {createdSale && (
                     <pre>{JSON.stringify(createdSale, null, 2)}</pre>
                 )}

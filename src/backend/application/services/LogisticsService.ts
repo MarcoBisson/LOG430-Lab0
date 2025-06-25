@@ -1,3 +1,4 @@
+import { ReplenishmentRequestStatus } from '@prisma/client';
 import { ILogisticsRepository } from '../../domain/repositories/ILogisticsRepository';
 import { IStoreRepository } from '../../domain/repositories/IStoreRepository';
 
@@ -41,10 +42,12 @@ export class LogisticsService {
         if (store.type !== 'SALES')
             throw new Error('Invalid store type for replenishment');
 
-        await this.logisticRepo.decrementCentralStock(req.storeId, req.productId, req.quantity);
+        const logiStore = await this.logisticRepo.getLogisticStores();
+
+        await this.logisticRepo.decrementCentralStock(logiStore[0].id, req.productId, req.quantity);
         await this.storeRepo.incrementStoreStock(req.storeId, req.productId, req.quantity);
 
-        return this.logisticRepo.updateReplenishmentStatus(requestId, 'APPROVED');
+        return this.logisticRepo.updateReplenishmentStatus(requestId, ReplenishmentRequestStatus.APPROVED);
     }
 
     /**
@@ -54,5 +57,13 @@ export class LogisticsService {
      */
     async checkCriticalStock(th = 5) {
         return this.storeRepo.findStoreStocksBelow(th);
+    }
+
+    async getReplenishments() {
+        return this.logisticRepo.getReplenishmentRequests();
+    }
+
+    async getLogisticStores(){
+        return this.logisticRepo.getLogisticStores();
     }
 }

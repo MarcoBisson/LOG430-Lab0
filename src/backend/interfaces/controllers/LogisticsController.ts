@@ -47,4 +47,14 @@ export class LogisticsController {
         const alerts = await logisticsService.checkCriticalStock();
         res.json(alerts);
     }
+
+    /**
+     * Liste tous les requetes de réapprovisionnement.
+     * @param req La requête HTTP.
+     * @param res La réponse HTTP.
+     */
+    static async replenishments(req: Request, res: Response) {
+        const alerts = await logisticsService.getReplenishments();
+        res.json(alerts);
+    }
 }
