@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ReportController } from '../controllers/ReportController';
+import { authenticateJWT } from '../middlewares/authentificateJWT';
 
 const reportRoutes = Router();
 
@@ -7,42 +8,46 @@ const reportRoutes = Router();
  * @openapi
  * /api/reports/consolidated:
  *   get:
- *     summary: Récupère un rapport consolidé des ventes, produits et stocks.
+ *     summary: Récupère un rapport consolidé des ventes
  *     tags:
- *       - Reports
+ *       - Rapports
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: startDate
  *         schema:
  *           type: string
  *           format: date
- *         required: false
- *         description: Date de début de l'intervalle (format ISO 8601)
+ *         description: Date de début du rapport
  *       - in: query
  *         name: endDate
  *         schema:
  *           type: string
  *           format: date
- *         required: false
- *         description: Date de fin de l'intervalle (format ISO 8601)
+ *         description: Date de fin du rapport
  *     responses:
  *       200:
- *         description: Rapport consolidé retourné avec succès
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ReportDTO'
- *       400:
- *         description: Paramètres invalides
+ *         description: Rapport consolidé récupéré avec succès
  *         content:
  *           application/json:
  *             schema:
  *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Date invalide"
+ *               additionalProperties: true
+ *       403:
+ *         description: Jeton invalide
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Erreur serveur interne
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-reportRoutes.get('/consolidated', ReportController.consolidated);
+
+reportRoutes.get('/consolidated', authenticateJWT,  ReportController.consolidated);
 
 export default reportRoutes;

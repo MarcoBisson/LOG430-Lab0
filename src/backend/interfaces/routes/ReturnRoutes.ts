@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ReturnController } from '../controllers/ReturnController';
+import { authenticateJWT } from '../middlewares/authentificateJWT';
 
 const returnRoute = Router();
 
@@ -7,34 +8,33 @@ const returnRoute = Router();
  * @openapi
  * /api/returns:
  *   post:
- *     summary: Enregistre un retour de produit dans le système.
+ *     summary: Traite un retour pour une vente existante
+ *     description: Lance le traitement d’un retour en se basant sur l’ID de la vente fournie.
  *     tags:
- *       - Returns
+ *       - Retour
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
- *       description: Détails du retour, notamment l'ID de la vente
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - saleId
  *             properties:
  *               saleId:
  *                 type: integer
- *                 example: 123
+ *                 description: ID de la vente à retourner
+ *                 example: 42
  *     responses:
  *       204:
- *         description: Retour traité avec succès, pas de contenu retourné
- *       400:
- *         description: Requête invalide ou paramètres manquants
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "ID de vente invalide ou manquant"
+ *         description: Retour traité avec succès
+ *       404:
+ *         description: Vente introuvable
+ *       401:
+ *         description: Token JWT manquant ou invalide
  */
-returnRoute.post('/:saleId', ReturnController.process);
+returnRoute.post('/:saleId', authenticateJWT, ReturnController.process);
 
 export default returnRoute;

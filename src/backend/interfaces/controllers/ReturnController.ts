@@ -14,7 +14,10 @@ export class ReturnController {
      * @param res La réponse HTTP.
      */
     static async process(req: Request, res: Response) {
-        await returnService.processReturn(+req.body.saleId);
+        const sale = await saleRepository.getSaleById(+req.body.saleId);
+        if (!sale)  res.status(404).json({ error: 'Ventes introuvable' })
+
+        await returnService.processReturn(sale?.id ?? +req.body.saleId);
         res.status(204).end();
     }
 }

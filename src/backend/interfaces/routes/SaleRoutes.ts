@@ -1,16 +1,16 @@
 import { Router } from 'express';
 import { SaleController } from '../controllers/SaleController';
+import { authenticateJWT } from '../middlewares/authentificateJWT';
 const saleRoutes = Router();
 
 /**
  * @openapi
  * /api/sales:
  *   post:
- *     summary: Enregistre une vente dans le système.
+ *     summary: Enregistre une nouvelle vente
  *     tags:
- *       - Sales
+ *       - Ventes
  *     requestBody:
- *       description: Détails de la vente, incluant l'ID du magasin et les articles vendus
  *       required: true
  *       content:
  *         application/json:
@@ -27,7 +27,7 @@ const saleRoutes = Router();
  *                   properties:
  *                     productId:
  *                       type: integer
- *                       example: 42
+ *                       example: 101
  *                     quantity:
  *                       type: integer
  *                       example: 3
@@ -38,10 +38,9 @@ const saleRoutes = Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Sale'
- *       400:
- *         description: Requête invalide
  */
-saleRoutes.post('/', SaleController.record);
+
+saleRoutes.post('/', authenticateJWT, SaleController.record);
 
 /**
  * @openapi
@@ -49,13 +48,13 @@ saleRoutes.post('/', SaleController.record);
  *   get:
  *     summary: Récupère une vente par son ID
  *     tags:
- *       - Sales
+ *       - Ventes
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: integer
- *         required: true
  *         description: ID de la vente
  *     responses:
  *       200:
@@ -69,12 +68,9 @@ saleRoutes.post('/', SaleController.record);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Not found"
+ *               $ref: '#/components/schemas/Error'
  */
-saleRoutes.get('/:id', SaleController.get);
+
+saleRoutes.get('/:id', authenticateJWT, SaleController.get);
 
 export default saleRoutes;

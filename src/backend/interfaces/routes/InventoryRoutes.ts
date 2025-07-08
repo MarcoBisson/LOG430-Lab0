@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { InventoryController } from '../controllers/InventoryController';
+import { authenticateJWT } from '../middlewares/authentificateJWT';
 const inventoryRoutes = Router();
 
 /**
@@ -8,7 +9,9 @@ const inventoryRoutes = Router();
  *   get:
  *     summary: Récupère le stock central
  *     tags:
- *       - Stock
+ *       - Inventaire
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Stock central récupéré avec succès
@@ -18,8 +21,15 @@ const inventoryRoutes = Router();
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/ProductStock'
+ *       401:
+ *         description: Accès non autorisé (CLIENT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-inventoryRoutes.get('/central', InventoryController.central);
+
+inventoryRoutes.get('/central', authenticateJWT, InventoryController.central);
 
 /**
  * @openapi
@@ -27,7 +37,9 @@ inventoryRoutes.get('/central', InventoryController.central);
  *   get:
  *     summary: Récupère le stock d’un magasin spécifique
  *     tags:
- *       - Stock
+ *       - Inventaire
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: storeId
@@ -44,9 +56,20 @@ inventoryRoutes.get('/central', InventoryController.central);
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/ProductStock'
- *       404:
- *         description: Magasin introuvable
+ *       401:
+ *         description: Accès non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Token invalide
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-inventoryRoutes.get('/store/:storeId', InventoryController.store);
+
+inventoryRoutes.get('/store/:storeId', authenticateJWT, InventoryController.store);
 
 export default inventoryRoutes;

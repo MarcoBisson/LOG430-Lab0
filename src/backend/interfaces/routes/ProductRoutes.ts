@@ -1,14 +1,17 @@
 import { Router } from 'express';
 import { ProductController } from '../controllers/ProductController';
+import { authenticateJWT } from '../middlewares/authentificateJWT';
 const productRoutes = Router();
 
 /**
  * @openapi
- * /api/products/:
+ * /api/products:
  *   get:
- *     summary: Récupère la liste complète des produits
+ *     summary: Récupère tous les produits disponibles
  *     tags:
- *       - Products
+ *       - Produits
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Liste des produits
@@ -18,147 +21,180 @@ const productRoutes = Router();
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Product'
+ *       401:
+ *         description: Non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-productRoutes.get('/', ProductController.list);
+
+productRoutes.get('/', authenticateJWT, ProductController.list);
 
 /**
  * @openapi
  * /api/products/{id}:
  *   get:
- *     summary: Récupère un produit par son ID
+ *     summary: Récupère un produit par ID
  *     tags:
- *       - Products
+ *       - Produits
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: id
+ *         in: path
+ *         required: true
  *         schema:
  *           type: integer
- *         required: true
- *         description: ID du produit
  *     responses:
  *       200:
- *         description: Détails du produit
+ *         description: Produit trouvé
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Product'
  *       404:
  *         description: Produit non trouvé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-productRoutes.get('/:id', ProductController.get);
+
+productRoutes.get('/:id', authenticateJWT, ProductController.get);
 
 /**
  * @openapi
  * /api/products/search/name/{name}:
  *   get:
- *     summary: Recherche des produits par nom
+ *     summary: Recherche de produits par nom
  *     tags:
- *       - Products
+ *       - Produits
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: name
+ *       - name: name
+ *         in: path
+ *         required: true
  *         schema:
  *           type: string
- *         required: true
- *         description: Nom à rechercher
  *     responses:
  *       200:
- *         description: Produits correspondant au nom
+ *         description: Produits trouvés
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Product'
+ *       404:
+ *         description: Aucun produit trouvé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-productRoutes.get('/search/name/:name', ProductController.getByName);
+
+productRoutes.get('/search/name/:name', authenticateJWT, ProductController.getByName);
 
 /**
  * @openapi
  * /api/products/search/category/{category}:
  *   get:
- *     summary: Recherche des produits par catégorie
+ *     summary: Recherche de produits par catégorie
  *     tags:
- *       - Products
+ *       - Produits
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: category
+ *       - name: category
+ *         in: path
+ *         required: true
  *         schema:
  *           type: string
- *         required: true
- *         description: Catégorie à rechercher
  *     responses:
  *       200:
- *         description: Produits correspondant à la catégorie
+ *         description: Produits trouvés
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Product'
+ *       404:
+ *         description: Aucun produit trouvé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-productRoutes.get('/search/category/:category', ProductController.getByCategory);
+
+productRoutes.get('/search/category/:category', authenticateJWT, ProductController.getByCategory);
 
 /**
  * @openapi
  * /api/products/store/{id}:
  *   post:
- *     summary: Crée un nouveau produit dans un magasin
+ *     summary: Créé un nouveau produit pour un magasin
  *     tags:
- *       - Products
+ *       - Produits
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: id
+ *         in: path
+ *         required: true
  *         schema:
  *           type: integer
- *         required: true
- *         description: ID du magasin
  *     requestBody:
- *       description: Données du produit à créer
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Product'
+ *             $ref: '#/components/schemas/ProductInput'
  *     responses:
  *       201:
- *         description: Produit créé avec succès
+ *         description: Produit créé
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Product'
- *       400:
- *         description: Requête invalide
+ *       401:
+ *         description: Non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-productRoutes.post('/store/:id', ProductController.create);
+
+productRoutes.post('/store/:id', authenticateJWT, ProductController.create);
 
 /**
  * @openapi
- * /api/products/store/{storeId}/{productId}:
+ * /api/products/store/{storeId}/product/{productId}:
  *   put:
- *     summary: Met à jour un produit existant dans un magasin
+ *     summary: Met à jour un produit
  *     tags:
- *       - Products
+ *       - Produits
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: storeId
+ *       - name: storeId
+ *         in: path
+ *         required: true
  *         schema:
  *           type: integer
+ *       - name: productId
+ *         in: path
  *         required: true
- *         description: ID du magasin
- *       - in: path
- *         name: productId
  *         schema:
  *           type: integer
- *         required: true
- *         description: ID du produit
  *     requestBody:
- *       description: Données à mettre à jour
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Product'
+ *             $ref: '#/components/schemas/ProductInput'
  *     responses:
  *       200:
  *         description: Produit mis à jour
@@ -166,59 +202,82 @@ productRoutes.post('/store/:id', ProductController.create);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Product'
- *       400:
- *         description: Requête invalide
- *       404:
- *         description: Produit non trouvé
+ *       401:
+ *         description: Non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-productRoutes.put('/store/:storeId/:productId', ProductController.update);
+
+productRoutes.put('/store/:storeId/:productId', authenticateJWT, ProductController.update);
 
 /**
  * @openapi
  * /api/products/{id}:
  *   delete:
- *     summary: Supprime un produit par son ID
+ *     summary: Supprime un produit
  *     tags:
- *       - Products
+ *       - Produits
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: id
+ *         in: path
+ *         required: true
  *         schema:
  *           type: integer
- *         required: true
- *         description: ID du produit à supprimer
  *     responses:
  *       204:
- *         description: Produit supprimé avec succès (pas de contenu)
- *       404:
- *         description: Produit non trouvé
+ *         description: Produit supprimé
+ *       401:
+ *         description: Non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-productRoutes.delete('/:id', ProductController.delete);
+
+productRoutes.delete('/:id', authenticateJWT, ProductController.delete);
 
 /**
  * @openapi
  * /api/products/store/{id}:
  *   get:
- *     summary: Récupère tous les produits d’un magasin
+ *     summary: Récupère les produits d’un magasin
  *     tags:
- *       - Products
+ *       - Produits
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: id
+ *         in: path
+ *         required: true
  *         schema:
  *           type: integer
- *         required: true
- *         description: ID du magasin
  *     responses:
  *       200:
- *         description: Liste des produits en stock dans le magasin
+ *         description: Produits du magasin
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Product'
+ *       401:
+ *         description: Accès non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Token invalide
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-productRoutes.get('/store/:id', ProductController.getByStore);
+
+productRoutes.get('/store/:id', authenticateJWT, ProductController.getByStore);
 
 export default productRoutes;

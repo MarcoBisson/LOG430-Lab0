@@ -1,4 +1,5 @@
-import { PrismaClient, StoreType } from '@prisma/client'
+import { PrismaClient, StoreType, User, UserRole } from '@prisma/client'
+import * as bcrypt from 'bcryptjs';
 import { randomInt } from 'crypto';
 const prisma = new PrismaClient()
 
@@ -125,6 +126,59 @@ async function main() {
     await prisma.saleItem.createMany({
         data: saleItems
     })
+
+    // create user 
+    const users = [
+        {
+            username: 'admin',
+            password: await bcrypt.hash('admin', 10),
+            role: UserRole.ADMIN,
+            access: {
+                connect: storeIds.map(store => ({ id: store.id })),
+            },
+        },
+        {
+            username: 'client',
+            password: await bcrypt.hash('client', 10),
+            role: UserRole.CLIENT,
+            access: {
+                connect: storeIds.map(store => ({ id: store.id })),
+            },
+        },
+        {
+            username: 'staff2',
+            password: await bcrypt.hash('client2', 10),
+            role: UserRole.CLIENT,
+            access: {
+                connect: [{id: storeIds[1].id}],
+            },
+        },
+        {
+            username: 'staff3',
+            password: await bcrypt.hash('client3', 10),
+            role: UserRole.CLIENT,
+            access: {
+                connect: [{id: storeIds[2].id}],
+            },
+        },
+        {
+            username: 'staff',
+            password: await bcrypt.hash('staff', 10),
+            role: UserRole.STAFF,
+            access: {
+                connect: [{id: storeIds[0].id}],
+            },
+        },
+        {
+            username: 'logistic',
+            password: await bcrypt.hash('logistic', 10),
+            role: UserRole.LOGISTICS,
+            access: {
+                connect: [{id: storeIds[3].id}],
+            },
+        },
+    ]
+    await Promise.all(users.map(user => prisma.user.create({ data: user })));  
 }
 
 main()

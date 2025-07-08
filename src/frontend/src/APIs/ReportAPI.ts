@@ -1,5 +1,6 @@
 import { ReportDTO } from '../DTOs/ReportDTO';
 import { API_BASE } from '../config/api';
+import { authFetch } from '../utils/authFetch';
 
 /**
  * Récupère le rapport consolidé
@@ -13,5 +14,5 @@ export async function getReport(startDate?: string, endDate?: string): Promise<R
 
     const url = `${API_BASE}/reports/consolidated?${params.toString()}`;
 
-    return fetch(url).then(r => r.json());
+    return authFetch(url).then(r => r.json());
 }

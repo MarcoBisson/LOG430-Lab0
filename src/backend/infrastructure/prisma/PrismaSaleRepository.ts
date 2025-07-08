@@ -29,9 +29,22 @@ export class PrismaSaleRepository implements ISaleRepository {
         await prisma.sale.delete({ where: { id } });
     }
 
-    async groupSalesByStore(startDate?: Date, endDate?: Date): Promise<{ storeId: number; totalQuantity: number }[]> {
+    async groupSalesByStore(userId:number, startDate?: Date, endDate?: Date): Promise<{ storeId: number; totalQuantity: number }[]> {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { access: true }
+        });
+
+        if (!user?.access)
+            return [];
+        
+        const accessibleStoreIds = user.access.map(store => store.id);
+
         const sales = await prisma.sale.findMany({
             where: {
+                storeId:{
+                    in: accessibleStoreIds,
+                },
                 date: {
                     gte: startDate,
                     lte: endDate,
@@ -55,11 +68,23 @@ export class PrismaSaleRepository implements ISaleRepository {
         }));
     }
 
-    async getTopProducts(limit: number,startDate?: Date, endDate?: Date): Promise<{ productId: number; totalQuantity: number }[]> {
+    async getTopProducts(userId: number,limit: number,startDate?: Date, endDate?: Date): Promise<{ productId: number; totalQuantity: number }[]> {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { access: true }
+        });
+
+        if (!user?.access)
+            return [];
+
+        const accessibleStoreIds = user.access.map(store => store.id);
 
         const items = await prisma.saleItem.findMany({ 
             where: {
                 sale: {
+                    storeId: {
+                        in: accessibleStoreIds,
+                    },
                     date: {
                         gte: startDate,
                         lte: endDate,

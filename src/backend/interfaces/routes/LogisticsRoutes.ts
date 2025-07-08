@@ -1,128 +1,156 @@
 import { Router } from 'express';
 import { LogisticsController } from '../controllers/LogisticsController';
+import { authenticateJWT } from '../middlewares/authentificateJWT';
 const logisticsRoutes = Router();
 
 /**
  * @openapi
  * /api/logistics/replenishment/request:
  *   post:
- *     summary: Enregistre une demande de réapprovisionnement
+ *     summary: Demande un réapprovisionnement
  *     tags:
- *       - Logistics
+ *       - Logistique
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - storeId
+ *               - productId
+ *               - quantity
  *             properties:
  *               storeId:
  *                 type: integer
- *                 example: 1
  *               productId:
  *                 type: integer
- *                 example: 42
  *               quantity:
  *                 type: integer
- *                 example: 50
  *     responses:
  *       201:
- *         description: Demande créée avec succès
+ *         description: Réapprovisionnement demandé avec succès
  *         content:
  *           application/json:
- *             schema:
+ *              schema:
  *               $ref: '#/components/schemas/ReplenishmentRequest'
  *       400:
- *         description: Erreur lors de la création
+ *         description: Erreur de validation
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Accès non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Token invalide
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-logisticsRoutes.post('/replenishment', LogisticsController.request);
+
+logisticsRoutes.post('/replenishment', authenticateJWT, LogisticsController.request);
 
 /**
  * @openapi
  * /api/logistics/replenishment/approve/{id}:
  *   post:
- *     summary: Approuve une demande de réapprovisionnement
+ *     summary: Approuve un réapprovisionnement
  *     tags:
- *       - Logistics
+ *       - Logistique
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: integer
- *         required: true
- *         description: ID de la demande à approuver
+ *         description: ID du réapprovisionnement
  *     responses:
  *       200:
- *         description: Demande approuvée avec succès
+ *         description: Réapprovisionnement approuvé
  *         content:
  *           application/json:
- *             schema:
+ *              schema:
  *               $ref: '#/components/schemas/ReplenishmentRequest'
  *       400:
- *         description: Erreur lors de l’approbation
+ *         description: Erreur de validation
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Accès non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-logisticsRoutes.get('/replenishment', LogisticsController.replenishments);
+
+logisticsRoutes.get('/replenishment', authenticateJWT, LogisticsController.replenishments);
 
 /**
  * @openapi
  * /api/logistics/alerts:
  *   get:
- *     summary: Alerte sur les stocks critiques
+ *     summary: Récupère les alertes de stock critique
  *     tags:
- *       - Logistics
+ *       - Logistique
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Liste des alertes de stock critique
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   productId:
- *                     type: integer
- *                     example: 42
- *                   productName:
- *                     type: string
- *                     example: "Produit A"
- *                   stock:
- *                     type: integer
- *                     example: 3
- */
-logisticsRoutes.post('/replenishment/:id/approve', LogisticsController.approve);
-
-/**
- * @openapi
- * /api/logistics/replenishments:
- *   get:
- *     summary: Liste toutes les demandes de réapprovisionnement
- *     tags:
- *       - Logistics
- *     responses:
- *       200:
- *         description: Liste des demandes
+ *         description: Liste des alertes
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/ReplenishmentRequest'
+ *       401:
+ *         description: Accès non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-logisticsRoutes.get('/alerts', LogisticsController.alerts);
+
+logisticsRoutes.post('/replenishment/:id/approve', authenticateJWT, LogisticsController.approve);
+
+/**
+ * @openapi
+ * /api/logistics/alerts:
+ *   get:
+ *     summary: Vérifie les niveaux de stock critiques
+ *     tags:
+ *       - Logistique
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Alertes de stock retournées
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/StoreStock'
+ *       401:
+ *         description: Accès non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+logisticsRoutes.get('/alerts', authenticateJWT, LogisticsController.alerts);
 
 export default logisticsRoutes;

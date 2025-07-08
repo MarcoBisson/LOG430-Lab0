@@ -72,7 +72,7 @@ export default function ProductsPage() {
                     product={productBeingEdited}
                     onSave={async (data) => {
                     if (productBeingEdited.id == -1){
-                        await createProduct(storeId, productBeingEdited);
+                        await createProduct(storeId, data);
                     } else {
                         await updateProduct(productBeingEdited.id, storeId, data);
                     }

@@ -99,9 +99,9 @@ export class ProductService {
     }
 
     /**
-     * Recherche des produits par catégorie.
-     * @param storeId La catégorie des produits à rechercher.
-     * @returns Une liste de produits correspondant à la catégorie recherchée.
+     * Recherche des produits par store.
+     * @param storeId L'ID du store des produits à rechercher.
+     * @returns Une liste de produits correspondant au store recherchée.
      */
     async getProductsByStore(storeId: number): Promise<ProductStock[]> {
         const products = await this.productRepo.findProductsByStore(storeId);

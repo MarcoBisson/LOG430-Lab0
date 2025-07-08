@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { StockDTO } from '../DTOs/StockDTO';
 import { StoreStockDTO } from '../DTOs/StoreStockDTO';
+import { UserDTO } from '../DTOs/UserDTO';
 import { ReplenishmentRequestDTO } from '../DTOs/ReplenishmentRequestDTO';
 import { getStoreStock } from '../APIs/InventoryAPI';
 import { getCentralStock } from '../APIs/InventoryAPI';
 import { requestReplenishment, approveReplenishment, getAlerts, getReplenishments } from '../APIs/LogisticsAPI';
 import styles from './LogisticsPage.module.css';
 import { toast } from 'react-toastify';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export default function LogisticsPage() {
     const [central, setCentral] = useState<StockDTO[]>([]);
@@ -16,6 +18,7 @@ export default function LogisticsPage() {
     const [productId, setProductId] = useState(0);
     const [quantity, setQuantity] = useState(0);
     const [requests, setRequests] = useState<ReplenishmentRequestDTO[]>([]);
+    const [user, setUser] = useState<UserDTO>(useAuthStore(state => state.user) as UserDTO);
 
     // au chargement : central + alertes + stock magasin + requêtes
     useEffect(() => {
@@ -113,34 +116,38 @@ export default function LogisticsPage() {
                         </div>
                     </section>
 
-                    <section>
-                        <h2>Requêtes en attente</h2>
-                        {requests.length === 0
-                            ? <p>Aucune requête en attente.</p>
-                            : (
+                    { user.role !== 'STAFF' && (
+                        <>
+                            <section>
+                                <h2>Requêtes en attente</h2>
+                                {requests.length === 0
+                                    ? <p>Aucune requête en attente.</p>
+                                    : (
+                                        <ul>
+                                            {requests.map(r => (
+                                                <li key={r.id}>
+                                                    <span>
+                                                        Req#{r.id} – Magasin ID# {r.storeId} – Produit #{r.productId} – Quantité : {r.quantity} – Status : {r.status}
+                                                    </span>
+                                                    <button onClick={() => handleApprove(r.id)} hidden={r.status == 'APPROVED'}>Approuver</button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                            </section>
+
+                            <section>
+                                <h2>Alertes rupture</h2>
                                 <ul>
-                                    {requests.map(r => (
-                                        <li key={r.id}>
-                                            <span>
-                                                Req#{r.id} – Magasin ID# {r.storeId} – Produit #{r.productId} – Quantité : {r.quantity} – Status : {r.status}
-                                            </span>
-                                            <button onClick={() => handleApprove(r.id)} hidden={r.status == 'APPROVED'}>Approuver</button>
+                                    {alerts.map(a => (
+                                        <li key={`${a.storeId}-${a.productId}`}>
+                                            Magasin #{a.storeId}, Produit #{a.productId}: {a.quantity}
                                         </li>
                                     ))}
                                 </ul>
-                            )}
-                    </section>
-
-                    <section>
-                        <h2>Alertes rupture</h2>
-                        <ul>
-                            {alerts.map(a => (
-                                <li key={`${a.storeId}-${a.productId}`}>
-                                    Magasin #{a.storeId}, Produit #{a.productId}: {a.quantity}
-                                </li>
-                            ))}
-                        </ul>
-                    </section>
+                            </section>
+                        </>
+                    )}
                 </div>
             </div>
             

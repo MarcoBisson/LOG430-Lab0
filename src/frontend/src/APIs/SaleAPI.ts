@@ -1,6 +1,7 @@
 import { SaleDTO } from "../DTOs/SaleDTO";
 import { CartItemDTO } from "../DTOs/CartItemDTO";
 import { API_BASE } from "../config/api";
+import { authFetch } from "../utils/authFetch";
 
 /**
  * Enregistre une vente dans le système
@@ -9,7 +10,7 @@ import { API_BASE } from "../config/api";
  * @returns Les détails de la vente enregistrée
  */
 export async function recordSale(storeId: number, items: CartItemDTO[]): Promise<SaleDTO> {
-    return fetch(`${API_BASE}/sales`, {
+    return authFetch(`${API_BASE}/sales`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ storeId, items })
@@ -22,7 +23,7 @@ export async function recordSale(storeId: number, items: CartItemDTO[]): Promise
  * @returns Les détails de la vente
  */
 export async function getSale(id: number): Promise<SaleDTO> {
-    return fetch(`${API_BASE}/sales/${id}`)
+    return authFetch(`${API_BASE}/sales/${id}`)
         .then(res => {
             if (!res.ok) throw new Error(`Sale ${id} not found`);
             return res.json();

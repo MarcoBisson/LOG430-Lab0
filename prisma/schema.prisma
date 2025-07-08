@@ -32,6 +32,7 @@ model Store {
   sales                 Sale[]
   storeStocks           StoreStock[]
   replenishmentRequests ReplenishmentRequest[]
+  users User[] @relation("UserAccess")
 }
 
 model StoreStock {
@@ -78,6 +79,14 @@ model ReplenishmentRequest {
   @@unique([storeId, productId])
 }
 
+model User {
+  id       Int     @id @default(autoincrement())
+  username String  @unique
+  password String
+  role     String
+  access   Store[] @relation("UserAccess")
+}
+
 enum StoreType {
   SALES
   LOGISTICS
@@ -88,4 +97,11 @@ enum ReplenishmentRequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum UserRole {
+  CLIENT
+  ADMIN
+  STAFF
+  LOGISTICS
 }
