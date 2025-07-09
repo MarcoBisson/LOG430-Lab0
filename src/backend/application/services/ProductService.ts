@@ -1,9 +1,9 @@
 
 import { Product, ProductStock } from '../../domain/entities/Product';
-import { IProductRepository } from '../../domain/repositories/IProductRepository';
+import type { IProductRepository } from '../../domain/repositories/IProductRepository';
 
 export class ProductService {
-    constructor(private productRepo: IProductRepository) { }
+    constructor(private readonly productRepo: IProductRepository) { }
 
     /**
      * Récupère une liste de tous les produits disponibles.
@@ -11,7 +11,7 @@ export class ProductService {
      */
     async listProducts(): Promise<Product[]> {
         return (await this.productRepo.listProducts()).map(
-            p => new Product(p.id, p.name, p.price, p.description, p.category)
+            p => new Product(p.id, p.name, p.price, p.description, p.category),
         );
     }
 
@@ -57,7 +57,7 @@ export class ProductService {
     async getProductsByName(name: string): Promise<Product[]> {
         const products = await this.productRepo.findProductsByName(name);
         return products.map(
-            p => new Product(p.id, p.name, p.price, p.description, p.category)
+            p => new Product(p.id, p.name, p.price, p.description, p.category),
         );
     }
 
@@ -69,7 +69,7 @@ export class ProductService {
     async getProductsByCategory(category: string): Promise<Product[]> {
         const products = await this.productRepo.findProductsByCategory(category);
         return products.map(
-            p => new Product(p.id, p.name, p.price, p.description, p.category)
+            p => new Product(p.id, p.name, p.price, p.description, p.category),
         );
     }
 
@@ -83,7 +83,7 @@ export class ProductService {
     async updateProduct(
         productId: number,
         storeId: number,
-        data: { name?: string; price?: number; description?: string; category?: string; stock: number}
+        data: { name?: string; price?: number; description?: string; category?: string; stock: number},
     ): Promise<ProductStock> {
         const p = await this.productRepo.updateProduct(productId, storeId, data);
         return new ProductStock(p.id, p.name, p.price, p.description, p.category, p.stock);
@@ -95,7 +95,7 @@ export class ProductService {
      * @returns Une instance de ProductEntity représentant le produit supprimé.
      */
     async deleteProduct(id: number): Promise<void> {
-        const p = await this.productRepo.deleteProduct(id);
+        await this.productRepo.deleteProduct(id);
     }
 
     /**
@@ -106,7 +106,7 @@ export class ProductService {
     async getProductsByStore(storeId: number): Promise<ProductStock[]> {
         const products = await this.productRepo.findProductsByStore(storeId);
         return products.map(
-            p => new ProductStock(p.id, p.name, p.price, p.description, p.category, p.stock)
+            p => new ProductStock(p.id, p.name, p.price, p.description, p.category, p.stock),
         );
     }
 }

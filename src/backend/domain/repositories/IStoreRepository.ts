@@ -1,5 +1,5 @@
-import { Store } from '../entities/Store';
-import { StoreStock } from '../entities/StoreStock';
+import type { Store } from '../entities/Store';
+import type { StoreStock } from '../entities/StoreStock';
 
 export interface IStoreRepository {
     /**

@@ -1,5 +1,5 @@
-import { ReplenishmentRequestDTO } from '../DTOs/ReplenishmentRequestDTO';
-import { StoreStockDTO } from '../DTOs/StoreStockDTO';
+import type { ReplenishmentRequestDTO } from '../DTOs/ReplenishmentRequestDTO';
+import type { StoreStockDTO } from '../DTOs/StoreStockDTO';
 import { API_BASE } from '../config/api';
 import { authFetch } from '../utils/authFetch';
 
@@ -14,7 +14,7 @@ export async function requestReplenishment(storeId: number, productId: number, q
     return authFetch(`${API_BASE}/logistics/replenishment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storeId, productId, quantity })
+        body: JSON.stringify({ storeId, productId, quantity }),
     }).then(r => r.json());
 }
 
@@ -25,7 +25,7 @@ export async function requestReplenishment(storeId: number, productId: number, q
  */
 export async function approveReplenishment(id: number): Promise<ReplenishmentRequestDTO> {
     return authFetch(`${API_BASE}/logistics/replenishment/${id}/approve`, {
-        method: 'POST'
+        method: 'POST',
     }).then(res => res.json());
 }
 

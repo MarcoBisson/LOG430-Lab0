@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
+import type { Response } from 'express';
 import { InventoryService } from '../../application/services/InventoryService';
 import { PrismaStoreRepository } from '../../infrastructure/prisma/PrismaStoreRepository';
 import { PrismaLogisticsRepository } from '../../infrastructure/prisma/PrismaLogisticsRepository';
-import { AuthenticatedRequest } from '../middlewares/authentificateJWT';
+import type { AuthenticatedRequest } from '../middlewares/authentificateJWT';
 import { UserRole } from '@prisma/client';
 import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
 
@@ -18,7 +18,7 @@ export class InventoryController {
      * @param res La réponse HTTP.
      */
     static async central(req: AuthenticatedRequest, res: Response) {
-        if (req.user && req.user.role != UserRole.CLIENT) {
+        if (req.user && req.user.role !== UserRole.CLIENT) {
             const central = await inventoryService.getCentralStock();
             res.json(central);
         } else {
@@ -35,9 +35,9 @@ export class InventoryController {
         const storeId = +req.params.storeId;
 
         if (req.user){
-            const access = await userRepository.getUserAccess(req.user.id)
+            const access = await userRepository.getUserAccess(req.user.id);
 
-            if (access.find( store => store.id == storeId)){
+            if (access.find( store => store.id === storeId)){
                 const storeStock = await inventoryService.getStoreStock(storeId);
                 res.json(storeStock);
             } else {

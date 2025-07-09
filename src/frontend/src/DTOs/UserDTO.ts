@@ -1,4 +1,4 @@
-import { StoreDTO } from "./StoreDTO";
+import type { StoreDTO } from './StoreDTO';
 
 export interface UserDTO {
     id: number,

@@ -1,4 +1,4 @@
-import { StoreType } from "@prisma/client";
+import type { StoreType } from '@prisma/client';
 
 export interface StoreDTO {
     id: number,

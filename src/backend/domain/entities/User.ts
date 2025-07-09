@@ -1,4 +1,4 @@
-import { Store } from "./Store";
+import type { Store } from './Store';
 
 /**
  * @openapi
@@ -31,7 +31,7 @@ export class User {
         public role: string,
         public username: string,
         public password: string,
-        public access: Store[]
+        public access: Store[],
     ) { }
 }
 

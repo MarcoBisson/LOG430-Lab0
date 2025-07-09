@@ -1,11 +1,11 @@
-import { ISaleRepository } from "../../domain/repositories/ISaleRepository";
-import { IStoreRepository } from "../../domain/repositories/IStoreRepository";
-import { Sale } from "../../domain/entities/Sale";
-import { SaleItem } from "../../domain/entities/SaleItem";
-import { CartItem } from "../../domain/entities/CartItem";
+import type { ISaleRepository } from '../../domain/repositories/ISaleRepository';
+import type { IStoreRepository } from '../../domain/repositories/IStoreRepository';
+import { Sale } from '../../domain/entities/Sale';
+import { SaleItem } from '../../domain/entities/SaleItem';
+import type { CartItem } from '../../domain/entities/CartItem';
 
 export class SaleService {
-  constructor(private saleRepo: ISaleRepository, private storeRepo: IStoreRepository) { }
+  constructor(private readonly saleRepo: ISaleRepository, private readonly storeRepo: IStoreRepository) { }
 
   /**
    * Récupère une vente par son ID.
@@ -22,8 +22,8 @@ export class SaleService {
       sale.date,
       sale.storeId,
       sale.saleItems.map(
-        (si: any) => new SaleItem(si.id, si.saleId, si.productId, si.quantity, si.unitPrice)
-      )
+        (si: any) => new SaleItem(si.id, si.saleId, si.productId, si.quantity, si.unitPrice),
+      ),
     );
   }
 
@@ -50,8 +50,8 @@ export class SaleService {
       sale.date,
       sale.storeId,
       sale.saleItems.map(
-        (si: any) => new SaleItem(si.id, si.saleId, si.productId, si.quantity, si.unitPrice)
-      )
+        (si: any) => new SaleItem(si.id, si.saleId, si.productId, si.quantity, si.unitPrice),
+      ),
     );
   }
 }

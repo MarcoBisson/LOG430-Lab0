@@ -1,5 +1,5 @@
-import { Sale } from '../entities/Sale';
-import { SaleItem } from '../entities/SaleItem';
+import type { Sale } from '../entities/Sale';
+import type { SaleItem } from '../entities/SaleItem';
 
 export interface ISaleRepository {
     /**

@@ -1,8 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import { ISaleRepository } from '../../domain/repositories/ISaleRepository';
-import { Sale } from '../../domain/entities/Sale';
-import { SaleItem } from '../../domain/entities/SaleItem';
-import { Store } from '../../domain/entities/Store';
+import type { ISaleRepository } from '../../domain/repositories/ISaleRepository';
+import type { Sale } from '../../domain/entities/Sale';
+import type { SaleItem } from '../../domain/entities/SaleItem';
 
 const prisma = new PrismaClient();
 
@@ -11,9 +10,9 @@ export class PrismaSaleRepository implements ISaleRepository {
         return prisma.sale.create({
             data: {
                 storeId,
-                saleItems: { create: items.map(i => ({ productId: i.productId, quantity: i.quantity, unitPrice: /* fetch current price */ 0 })) }
+                saleItems: { create: items.map(i => ({ productId: i.productId, quantity: i.quantity, unitPrice: /* fetch current price */ 0 })) },
             },
-            include: { saleItems: true }
+            include: { saleItems: true },
         });
     }
 
@@ -32,7 +31,7 @@ export class PrismaSaleRepository implements ISaleRepository {
     async groupSalesByStore(userId:number, startDate?: Date, endDate?: Date): Promise<{ storeId: number; totalQuantity: number }[]> {
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { access: true }
+            select: { access: true },
         });
 
         if (!user?.access)
@@ -52,8 +51,8 @@ export class PrismaSaleRepository implements ISaleRepository {
             },
             select: {
                 storeId: true,
-                saleItems: { select: { quantity: true } }
-            }
+                saleItems: { select: { quantity: true } },
+            },
         });
 
         const map: Record<number, number> = {};
@@ -64,14 +63,14 @@ export class PrismaSaleRepository implements ISaleRepository {
 
         return Object.entries(map).map(([storeId, totalQuantity]) => ({
             storeId: Number(storeId),
-            totalQuantity
+            totalQuantity,
         }));
     }
 
     async getTopProducts(userId: number,limit: number,startDate?: Date, endDate?: Date): Promise<{ productId: number; totalQuantity: number }[]> {
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { access: true }
+            select: { access: true },
         });
 
         if (!user?.access)
@@ -93,8 +92,8 @@ export class PrismaSaleRepository implements ISaleRepository {
             },
             select: { 
                 productId: true, 
-                quantity: true 
-            } 
+                quantity: true, 
+            }, 
         });
 
         const map: Record<number, number> = {};

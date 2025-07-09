@@ -23,6 +23,6 @@ export class StoreStock {
         public id: number,
         public storeId: number,
         public productId: number,
-        public quantity: number
+        public quantity: number,
     ) { }
 }

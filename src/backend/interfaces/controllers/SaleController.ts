@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { SaleService } from '../../application/services/SaleService';
 import { PrismaSaleRepository } from '../../infrastructure/prisma/PrismaSaleRepository';
 import { PrismaStoreRepository } from '../../infrastructure/prisma/PrismaStoreRepository';

@@ -1,8 +1,9 @@
-import { PrismaClient, StoreStock, StoreType } from '@prisma/client';
-import { ReplenishmentRequestStatus } from '@prisma/client';
-import { ILogisticsRepository } from '../../domain/repositories/ILogisticsRepository';
-import { ReplenishmentRequest } from '../../domain/entities/ReplenishmentRequest';
-import { Store } from '../../domain/entities/Store';
+import type { StoreStock} from '@prisma/client';
+import { PrismaClient, StoreType } from '@prisma/client';
+import type { ReplenishmentRequestStatus } from '@prisma/client';
+import type { ILogisticsRepository } from '../../domain/repositories/ILogisticsRepository';
+import type { ReplenishmentRequest } from '../../domain/entities/ReplenishmentRequest';
+import type { Store } from '../../domain/entities/Store';
 
 const prisma = new PrismaClient();
 
@@ -11,14 +12,14 @@ export class PrismaLogisticsRepository implements ILogisticsRepository {
         const storeStocks = await prisma.storeStock.findMany({
             where: {
                 store:{
-                    type: StoreType.LOGISTICS
-                }
+                    type: StoreType.LOGISTICS,
+                },
               },
               select: {
                 productId:true,
                 quantity: true,
               },
-        })
+        });
         return storeStocks.map(p => ({ productId: p.productId, stock: p.quantity }));
     }
 
@@ -53,8 +54,8 @@ export class PrismaLogisticsRepository implements ILogisticsRepository {
     async getLogisticStores(): Promise<Store[]> {
         return prisma.store.findMany({
             where:{
-                type: StoreType.LOGISTICS
-            }
+                type: StoreType.LOGISTICS,
+            },
         });
     }
 }

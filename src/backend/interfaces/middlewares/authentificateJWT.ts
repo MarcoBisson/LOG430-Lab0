@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../../application/services/AuthService';
-import { User } from '@prisma/client';
+import type { User } from '@prisma/client';
 
 export interface AuthenticatedRequest extends Request {
   user?: User;
@@ -18,7 +18,7 @@ export function authenticateJWT(req: AuthenticatedRequest, res: Response, next: 
       if (!req.user)
         throw new Error('User not found in token');
       next();
-    } catch (err) {
+    } catch {
       res.status(403).json({ error: 'Invalid token' });
     }
   } else {

@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import type { User } from '@prisma/client';
 import { API_BASE } from '../config/api';
 
 export async function getToken(username:string, password: string): Promise<{user: User, token:string}> {

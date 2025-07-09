@@ -4,7 +4,7 @@ module.exports = [
   },
 
   {
-    files: ["src/**/*.ts", "tests/**/*.ts"],
+    files: ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "prisma/**/*.ts"],
 
     languageOptions: {
       parser: require("@typescript-eslint/parser"),

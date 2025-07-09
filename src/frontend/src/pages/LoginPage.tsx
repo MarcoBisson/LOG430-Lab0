@@ -1,4 +1,4 @@
-import { use, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { getToken } from '../APIs/AuthAPI';
@@ -14,7 +14,7 @@ export default function LoginPage() {
     e.preventDefault();
 
     try {
-      const { user, token } = await getToken(username, password)
+      const { user, token } = await getToken(username, password);
       localStorage.setItem('token', token);
       setUser(user);
 
@@ -25,8 +25,8 @@ export default function LoginPage() {
       } else {
         navigate('/');
       }
-    } catch (err: any) {
-      toast.error('Une erreur est survenue')
+    } catch {
+      toast.error('Une erreur est survenue');
     }
   };
 

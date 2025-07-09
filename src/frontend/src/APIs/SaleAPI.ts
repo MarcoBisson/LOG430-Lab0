@@ -1,7 +1,7 @@
-import { SaleDTO } from "../DTOs/SaleDTO";
-import { CartItemDTO } from "../DTOs/CartItemDTO";
-import { API_BASE } from "../config/api";
-import { authFetch } from "../utils/authFetch";
+import type { SaleDTO } from '../DTOs/SaleDTO';
+import type { CartItemDTO } from '../DTOs/CartItemDTO';
+import { API_BASE } from '../config/api';
+import { authFetch } from '../utils/authFetch';
 
 /**
  * Enregistre une vente dans le système
@@ -13,7 +13,7 @@ export async function recordSale(storeId: number, items: CartItemDTO[]): Promise
     return authFetch(`${API_BASE}/sales`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storeId, items })
+        body: JSON.stringify({ storeId, items }),
     }).then(r => r.json());
 }
 

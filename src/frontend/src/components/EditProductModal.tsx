@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 
 type EditProductModalProps = {
   product: { id: number; name: string; price: number; stock: number }
@@ -7,15 +7,15 @@ type EditProductModalProps = {
 }
 
 export function EditProductModal({ product, onSave, onClose }: EditProductModalProps) {
-  const [name, setName] = useState(product.name)
-  const [price, setPrice] = useState(product.price)
-  const [stock, setStock] = useState(product.stock)
+  const [name, setName] = useState(product.name);
+  const [price, setPrice] = useState(product.price);
+  const [stock, setStock] = useState(product.stock);
 
   useEffect(() => {
-    setName(product.name)
-    setPrice(product.price)
-    setStock(product.stock)
-  }, [product])
+    setName(product.name);
+    setPrice(product.price);
+    setStock(product.stock);
+  }, [product]);
 
   return (
     <div style={styles.overlay}>
@@ -46,7 +46,7 @@ export function EditProductModal({ product, onSave, onClose }: EditProductModalP
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -71,4 +71,4 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     justifyContent: 'space-between',
   },
-}
+};

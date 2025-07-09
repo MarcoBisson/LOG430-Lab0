@@ -1,6 +1,6 @@
-import { ProductDTO } from "../DTOs/ProductDTO";
-import { API_BASE } from "../config/api";
-import { authFetch } from "../utils/authFetch";
+import type { ProductDTO } from '../DTOs/ProductDTO';
+import { API_BASE } from '../config/api';
+import { authFetch } from '../utils/authFetch';
 
 /**
  * Fetches tous les produits disponibles dans la base de données.
@@ -58,7 +58,7 @@ export async function createProduct(storeId:number, data: Omit<ProductDTO, 'id'>
     return authFetch(`${API_BASE}/products/store/${storeId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
     }).then(r => r.json());
 }
 
@@ -72,7 +72,7 @@ export async function updateProduct(productId: number, storeId:number, data: Par
     return authFetch(`${API_BASE}/products/store/${storeId}/${productId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
     }).then(r => r.json());
 }
 

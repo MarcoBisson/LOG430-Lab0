@@ -1,21 +1,21 @@
 import { PrismaClient } from '@prisma/client';
-import { IProductRepository } from '../../domain/repositories/IProductRepository';
-import { Product, ProductStock } from '../../domain/entities/Product';
+import type { IProductRepository } from '../../domain/repositories/IProductRepository';
+import type { Product, ProductStock } from '../../domain/entities/Product';
 
 const prisma = new PrismaClient();
 
 export class PrismaProductRepository implements IProductRepository {
     async createProduct(
         storeId: number,
-        data: Partial<Pick<ProductStock, 'name' | 'price' | 'description' | 'category'| 'stock'>>
+        data: Partial<Pick<ProductStock, 'name' | 'price' | 'description' | 'category'| 'stock'>>,
     ): Promise<Product> {
         const product = await prisma.product.create({ 
             data : {
                 name: data.name ?? '',
                 price: data.price ?? 0,
                 description: data.description,
-                category: data.category
-            }
+                category: data.category,
+            },
         });
 
         await prisma.storeStock.create({
@@ -23,8 +23,8 @@ export class PrismaProductRepository implements IProductRepository {
                 storeId: storeId,
                 productId: product.id,
                 quantity: data.stock ?? 0,
-            }
-        })
+            },
+        });
 
         return product;
     }
@@ -52,7 +52,7 @@ export class PrismaProductRepository implements IProductRepository {
     async updateProduct(
         productId: number,
         storeId: number,
-        data: Partial<Pick<ProductStock, 'name' | 'price' | 'description' | 'category'| 'stock'>>
+        data: Partial<Pick<ProductStock, 'name' | 'price' | 'description' | 'category'| 'stock'>>,
     ): Promise<ProductStock> {
         const { stock, ...productData } = data;
 
@@ -95,8 +95,8 @@ export class PrismaProductRepository implements IProductRepository {
                 storeStocks:{
                     some: {
                         storeId: storeId,
-                    }
-                }
+                    },
+                },
             },
             select: {
                 id: true,
@@ -111,9 +111,9 @@ export class PrismaProductRepository implements IProductRepository {
                     select: {
                         quantity: true,
                     },
-                }
-            }
-        })
+                },
+            },
+        });
         return products.map(p => ({
             id: p.id,
             name: p.name,

@@ -1,5 +1,5 @@
 import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
-import ProductsPage from './pages/ProductsPage'
+import ProductsPage from './pages/ProductsPage';
 import SalesPage from './pages/SalesPage';
 import ReturnsPage from './pages/ReturnsPage';
 import DashboardPage from './pages/DashboardPage';

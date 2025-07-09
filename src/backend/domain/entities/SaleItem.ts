@@ -31,6 +31,6 @@ export class SaleItem {
         public saleId: number,
         public productId: number,
         public quantity: number,
-        public unitPrice: number
+        public unitPrice: number,
     ) { }
 }

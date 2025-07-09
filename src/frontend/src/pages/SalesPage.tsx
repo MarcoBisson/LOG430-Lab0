@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { CartItemDTO } from '../DTOs/CartItemDTO';
-import { SaleDTO } from '../DTOs/SaleDTO';
+import type { CartItemDTO } from '../DTOs/CartItemDTO';
+import type { SaleDTO } from '../DTOs/SaleDTO';
 import { recordSale, getSale } from '../APIs/SaleAPI';
 import { getProductsByStoreId } from '../APIs/ProductAPI';
-import { ProductDTO } from '../DTOs/ProductDTO';
+import type { ProductDTO } from '../DTOs/ProductDTO';
 import { toast } from 'react-toastify';
 
 export default function SalesPage() {
@@ -22,14 +22,14 @@ export default function SalesPage() {
         }, [storeId]);
         
     const addItem = () => {
-        const product = products.find((p) => p.id == productId)
+        const product = products.find((p) => p.id === productId);
         if (product) {
             if (product.stock >= quantity)
                 setItems([...items, { storeId, productId, productName: product.name, quantity, unitPrice: product.price }]);
             else 
-                toast.error(`Stock insuffisant pour le produit: ${product.name}`)
+                toast.error(`Stock insuffisant pour le produit: ${product.name}`);
         } else {
-            toast.error('Produit introuvable ou non disponible')
+            toast.error('Produit introuvable ou non disponible');
         }
             
         setProductId(0);
@@ -41,9 +41,9 @@ export default function SalesPage() {
             const sale = await recordSale(storeId, items);
             setCreatedSale(sale);
             setItems([]);
-            toast.success(`Vente créée (ID: ${sale.id})`)
+            toast.success(`Vente créée (ID: ${sale.id})`);
         } catch (e: any) {
-            toast.error(`Erreur création: ${e.message}`)
+            toast.error(`Erreur création: ${e.message}`);
         }
     };
 
@@ -52,7 +52,7 @@ export default function SalesPage() {
             const s = await getSale(loadSaleId);
             setLoadedSale(s);
         } catch (e: any) {
-            toast.error(`Erreur chargement: ${e.message}`)
+            toast.error(`Erreur chargement: ${e.message}`);
             setLoadedSale(null);
         }
     };

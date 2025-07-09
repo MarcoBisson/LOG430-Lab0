@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { StockDTO } from '../DTOs/StockDTO';
-import { StoreStockDTO } from '../DTOs/StoreStockDTO';
-import { UserDTO } from '../DTOs/UserDTO';
-import { ReplenishmentRequestDTO } from '../DTOs/ReplenishmentRequestDTO';
+import type { StockDTO } from '../DTOs/StockDTO';
+import type { StoreStockDTO } from '../DTOs/StoreStockDTO';
+import type { UserDTO } from '../DTOs/UserDTO';
+import type { ReplenishmentRequestDTO } from '../DTOs/ReplenishmentRequestDTO';
 import { getStoreStock } from '../APIs/InventoryAPI';
 import { getCentralStock } from '../APIs/InventoryAPI';
 import { requestReplenishment, approveReplenishment, getAlerts, getReplenishments } from '../APIs/LogisticsAPI';
@@ -18,7 +18,7 @@ export default function LogisticsPage() {
     const [productId, setProductId] = useState(0);
     const [quantity, setQuantity] = useState(0);
     const [requests, setRequests] = useState<ReplenishmentRequestDTO[]>([]);
-    const [user, setUser] = useState<UserDTO>(useAuthStore(state => state.user) as UserDTO);
+    const [user] = useState<UserDTO>(useAuthStore(state => state.user) as UserDTO);
 
     // au chargement : central + alertes + stock magasin + requêtes
     useEffect(() => {
@@ -43,13 +43,13 @@ export default function LogisticsPage() {
     const handleApprove = async (reqId: number) => {
         try {
             await approveReplenishment(reqId);
-            toast.success(`Demande #${reqId} approuvée`)
+            toast.success(`Demande #${reqId} approuvée`);
             setCentral(await getCentralStock());
             setStoreStock(await getStoreStock(storeId));
             setAlerts(await getAlerts());
             setRequests(await getReplenishments());
         } catch (e: any) {
-            toast.error(`Erreur approbation: ${e.message}`)
+            toast.error(`Erreur approbation: ${e.message}`);
         }
     };
 
@@ -129,7 +129,7 @@ export default function LogisticsPage() {
                                                     <span>
                                                         Req#{r.id} – Magasin ID# {r.storeId} – Produit #{r.productId} – Quantité : {r.quantity} – Status : {r.status}
                                                     </span>
-                                                    <button onClick={() => handleApprove(r.id)} hidden={r.status == 'APPROVED'}>Approuver</button>
+                                                    <button onClick={() => handleApprove(r.id)} hidden={r.status === 'APPROVED'}>Approuver</button>
                                                 </li>
                                             ))}
                                         </ul>

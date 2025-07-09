@@ -1,5 +1,5 @@
-import { ReplenishmentRequestStatus, Store, StoreStock } from '@prisma/client';
-import { ReplenishmentRequest } from '../entities/ReplenishmentRequest';
+import type { ReplenishmentRequestStatus, Store, StoreStock } from '@prisma/client';
+import type { ReplenishmentRequest } from '../entities/ReplenishmentRequest';
 
 
 export interface ILogisticsRepository {

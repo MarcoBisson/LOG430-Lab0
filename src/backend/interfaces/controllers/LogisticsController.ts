@@ -1,9 +1,9 @@
-import { Request, Response } from 'express';
+import type { Response } from 'express';
 import { LogisticsService } from '../../application/services/LogisticsService';
 import { PrismaLogisticsRepository } from '../../infrastructure/prisma/PrismaLogisticsRepository';
 import { PrismaStoreRepository } from '../../infrastructure/prisma/PrismaStoreRepository';
 import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
-import { AuthenticatedRequest } from '../middlewares/authentificateJWT';
+import type { AuthenticatedRequest } from '../middlewares/authentificateJWT';
 import { UserRole } from '@prisma/client';
 
 const logisticsRepository = new PrismaLogisticsRepository();
@@ -22,9 +22,9 @@ export class LogisticsController {
             const { storeId, productId, quantity } = req.body;
 
             if (req.user){
-                const access = await userRepository.getUserAccess(req.user.id)
+                const access = await userRepository.getUserAccess(req.user.id);
 
-                if (access.find( store => store.id == storeId)){
+                if (access.find( store => store.id === storeId)){
                     const result = await logisticsService.requestReplenishment(+storeId, +productId, +quantity);
                     res.status(201).json(result);
                 } else {
@@ -48,7 +48,7 @@ export class LogisticsController {
     static async approve(req: AuthenticatedRequest, res: Response) {
         try {
             const { id } = req.params;
-            if (req.user && req.user.role != UserRole.CLIENT) {
+            if (req.user && req.user.role !== UserRole.CLIENT) {
                 const result = await logisticsService.approveReplenishment(+id);
                 res.json(result);
             } else {
@@ -65,7 +65,7 @@ export class LogisticsController {
      * @param res La réponse HTTP.
      */
     static async alerts(req: AuthenticatedRequest, res: Response) {
-        if (req.user && req.user.role != UserRole.CLIENT) {
+        if (req.user && req.user.role !== UserRole.CLIENT) {
             const alerts = await logisticsService.checkCriticalStock();
             res.json(alerts);
         } else {
@@ -79,7 +79,7 @@ export class LogisticsController {
      * @param res La réponse HTTP.
      */
     static async replenishments(req: AuthenticatedRequest, res: Response) {
-        if (req.user && req.user.role != UserRole.CLIENT) {
+        if (req.user && req.user.role !== UserRole.CLIENT) {
             const alerts = await logisticsService.getReplenishments();
             res.json(alerts);
         } else {

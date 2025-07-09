@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ReportDTO } from '../DTOs/ReportDTO';
+import type { ReportDTO } from '../DTOs/ReportDTO';
 import { getReport } from '../APIs/ReportAPI';
 import styles  from './DashboardPage.module.css';
 

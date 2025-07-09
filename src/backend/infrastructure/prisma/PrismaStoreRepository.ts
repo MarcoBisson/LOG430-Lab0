@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import { IStoreRepository } from '../../domain/repositories/IStoreRepository';
-import { Store } from '../../domain/entities/Store';
-import { StoreStock } from '../../domain/entities/StoreStock';
+import type { IStoreRepository } from '../../domain/repositories/IStoreRepository';
+import type { Store } from '../../domain/entities/Store';
+import type { StoreStock } from '../../domain/entities/StoreStock';
 
 const prisma = new PrismaClient();
 
@@ -21,14 +21,14 @@ export class PrismaStoreRepository implements IStoreRepository {
     async decrementStoreStock(storeId: number, productId: number, qty: number): Promise<StoreStock> {
         return prisma.storeStock.update({
             where: { storeId_productId: { storeId, productId } },
-            data: { quantity: { decrement: qty } }
+            data: { quantity: { decrement: qty } },
         });
     }
 
     async incrementStoreStock(storeId: number, productId: number, qty: number): Promise<StoreStock> {
         return prisma.storeStock.update({
             where: { storeId_productId: { storeId, productId } },
-            data: { quantity: { increment: qty } }
+            data: { quantity: { increment: qty } },
         });
     }
 

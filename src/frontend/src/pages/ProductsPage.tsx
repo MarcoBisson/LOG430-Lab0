@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ProductDTO } from '../DTOs/ProductDTO';
-import { getProducts, searchProductsByName, searchProductsByCategory, createProduct, updateProduct, deleteProduct, getProductsByStoreId } from '../APIs/ProductAPI';
-import styles from './ProductPage.module.css'
+import type { ProductDTO } from '../DTOs/ProductDTO';
+import { searchProductsByName, searchProductsByCategory, createProduct, updateProduct, deleteProduct, getProductsByStoreId } from '../APIs/ProductAPI';
+import styles from './ProductPage.module.css';
 import { EditProductModal } from '../components/EditProductModal';
 
 export default function ProductsPage() {
@@ -71,7 +71,7 @@ export default function ProductsPage() {
                 <EditProductModal
                     product={productBeingEdited}
                     onSave={async (data) => {
-                    if (productBeingEdited.id == -1){
+                    if (productBeingEdited.id === -1){
                         await createProduct(storeId, data);
                     } else {
                         await updateProduct(productBeingEdited.id, storeId, data);

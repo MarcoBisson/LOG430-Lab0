@@ -1,5 +1,5 @@
-import { Store } from "@prisma/client";
-import { User } from "../entities/User";
+import type { Store } from '@prisma/client';
+import type { User } from '../entities/User';
 
 export interface IUserRepository {
     getUser(username:string): Promise<User| null>;

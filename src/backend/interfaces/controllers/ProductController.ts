@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
+import type { Response } from 'express';
 import { ProductService } from '../../application/services/ProductService';
 import { PrismaProductRepository } from '../../infrastructure/prisma/PrismaProductRepository';
-import { AuthenticatedRequest } from '../middlewares/authentificateJWT';
+import type { AuthenticatedRequest } from '../middlewares/authentificateJWT';
 import { UserRole } from '@prisma/client';
 import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
 
@@ -56,7 +56,7 @@ export class ProductController {
      * @param res La réponse HTTP.
      */
     static async create(req: AuthenticatedRequest, res: Response) {
-        if (req.user && req.user.role != UserRole.CLIENT){
+        if (req.user && req.user.role !== UserRole.CLIENT){
             const p = await productService.createProduct(+req.params.id, req.body);
             res.status(201).json(p);
         } else {
@@ -70,7 +70,7 @@ export class ProductController {
      * @param res La réponse HTTP.
      */
     static async update(req: AuthenticatedRequest, res: Response) {
-        if (req.user && req.user.role != UserRole.CLIENT){
+        if (req.user && req.user.role !== UserRole.CLIENT){
             const p = await productService.updateProduct(+req.params.productId,+req.params.storeId, req.body);
             res.json(p);
         } else {
@@ -84,7 +84,7 @@ export class ProductController {
      * @param res La réponse HTTP.
      */
     static async delete(req: AuthenticatedRequest, res: Response) {
-        if (req.user && req.user.role != UserRole.CLIENT){
+        if (req.user && req.user.role !== UserRole.CLIENT){
             await productService.deleteProduct(+req.params.id);
             res.status(204).end();
         } else {
@@ -98,12 +98,12 @@ export class ProductController {
      * @param res La réponse HTTP.
      */
      static async getByStore(req: AuthenticatedRequest, res: Response) {
-        const storeId = req.params.id
+        const storeId = req.params.id;
 
         if (req.user){
-            const access = await userRepository.getUserAccess(req.user.id)
+            const access = await userRepository.getUserAccess(req.user.id);
 
-            if (access.find( store => store.id == +storeId)){
+            if (access.find( store => store.id === +storeId)){
                 const p = await productService.getProductsByStore(+storeId);
                 p ? res.json(p) : res.status(404).json({ error: 'Not found' });
             } else {

@@ -1,4 +1,4 @@
-import { useAuthStore } from "../stores/useAuthStore";
+import { useAuthStore } from '../stores/useAuthStore';
 
 export async function authFetch(input: RequestInfo, init: RequestInit = {}) {
   const token = localStorage.getItem('token');

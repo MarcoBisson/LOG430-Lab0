@@ -1,9 +1,9 @@
 import { ReplenishmentRequestStatus } from '@prisma/client';
-import { ILogisticsRepository } from '../../domain/repositories/ILogisticsRepository';
-import { IStoreRepository } from '../../domain/repositories/IStoreRepository';
+import type { ILogisticsRepository } from '../../domain/repositories/ILogisticsRepository';
+import type { IStoreRepository } from '../../domain/repositories/IStoreRepository';
 
 export class LogisticsService {
-    constructor(private logisticRepo: ILogisticsRepository, private storeRepo: IStoreRepository) { }
+    constructor(private readonly logisticRepo: ILogisticsRepository, private readonly storeRepo: IStoreRepository) { }
 
     /**
      * Fait une demande de réapprovisionnement pour un produit dans un magasin.
@@ -16,7 +16,7 @@ export class LogisticsService {
     async requestReplenishment(
         storeId: number,
         productId: number,
-        qty: number
+        qty: number,
     ) {
         const store = await this.storeRepo.findStoreById(storeId);
         if (!store) throw new Error('Store not found');

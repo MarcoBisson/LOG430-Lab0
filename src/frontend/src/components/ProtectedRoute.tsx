@@ -1,6 +1,4 @@
-// components/ProtectedRoute.tsx
-import { UserRole } from '@prisma/client';
-import { JSX } from 'react';
+import type { JSX } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/useAuthStore';
 
@@ -10,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
-  const { user } = useAuthStore()
+  const { user } = useAuthStore();
   const isAuthenticated = !!localStorage.getItem('token');
 
   if (!isAuthenticated || !user) return <Navigate to="/login" replace />;

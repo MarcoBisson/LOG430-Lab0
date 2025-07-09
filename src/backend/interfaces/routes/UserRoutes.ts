@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { AuthController } from '../controllers/AuthController'
+import { AuthController } from '../controllers/AuthController';
 
 const AuthRoutes = Router();
 
@@ -57,6 +57,6 @@ const AuthRoutes = Router();
  *                   type: string
  *                   example: Invalid credentials
  */
-AuthRoutes.post('/login', AuthController.login)
+AuthRoutes.post('/login', AuthController.login);
 
 export default AuthRoutes;

@@ -53,7 +53,7 @@ export class ProductStock extends Product {
         price: number,
         description: string | null,
         category: string | null,
-        public stock: number 
+        public stock: number, 
     ) {
         super(id, name, price, description, category);
     }

@@ -1,5 +1,5 @@
-import { StockDTO } from '../DTOs/StockDTO';
-import { StoreStockDTO } from '../DTOs/StoreStockDTO';
+import type { StockDTO } from '../DTOs/StockDTO';
+import type { StoreStockDTO } from '../DTOs/StoreStockDTO';
 import { API_BASE } from '../config/api';
 import { authFetch } from '../utils/authFetch';
 

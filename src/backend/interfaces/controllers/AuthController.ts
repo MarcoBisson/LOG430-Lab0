@@ -1,7 +1,6 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { AuthService } from '../../application/services/AuthService';
 import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
-import { access } from 'fs';
 
 const userRepository = new PrismaUserRepository();
 
@@ -17,7 +16,7 @@ export class AuthController {
         const token = AuthService.generateToken({ id: user.id, role: user.role });
         res.json({ 
             user : {id: user.id, role: user.role},
-            token 
+            token, 
           });
     }
   }

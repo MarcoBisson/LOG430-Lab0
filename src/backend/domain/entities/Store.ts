@@ -1,4 +1,4 @@
-import { StoreType } from '@prisma/client';
+import type { StoreType } from '@prisma/client';
 /**
  * @openapi
  * components:
@@ -25,6 +25,6 @@ export class Store {
         public id: number,
         public name: string,
         public address: string,
-        public type: StoreType
+        public type: StoreType,
     ) { }
 }

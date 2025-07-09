@@ -1,4 +1,4 @@
-import { SaleItem } from './SaleItem';
+import type { SaleItem } from './SaleItem';
 
 /**
  * @openapi
@@ -27,6 +27,6 @@ export class Sale {
         public id: number,
         public date: Date,
         public storeId: number,
-        public saleItems: SaleItem[]
+        public saleItems: SaleItem[],
     ) { }
 }

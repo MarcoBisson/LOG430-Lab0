@@ -1,8 +1,8 @@
-import { ISaleRepository } from "../../domain/repositories/ISaleRepository";
-import { IStoreRepository } from "../../domain/repositories/IStoreRepository";
+import type { ISaleRepository } from '../../domain/repositories/ISaleRepository';
+import type { IStoreRepository } from '../../domain/repositories/IStoreRepository';
 
 export class ReturnService {
-    constructor(private saleRepo: ISaleRepository, private storeRepo: IStoreRepository) { }
+    constructor(private readonly saleRepo: ISaleRepository, private readonly storeRepo: IStoreRepository) { }
 
     /**
      * Traite le retour d'une vente en réintégrant les produits dans le stock du magasin.

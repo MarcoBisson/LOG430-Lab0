@@ -1,4 +1,4 @@
-import { Product, ProductStock } from "../entities/Product";
+import type { Product, ProductStock } from '../entities/Product';
 
 export interface IProductRepository {
     /**

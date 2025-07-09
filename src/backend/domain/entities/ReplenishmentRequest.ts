@@ -1,4 +1,4 @@
-import { ReplenishmentRequestStatus } from '@prisma/client';
+import type { ReplenishmentRequestStatus } from '@prisma/client';
 
 /**
  * @openapi
@@ -35,6 +35,6 @@ export class ReplenishmentRequest {
         public productId: number,
         public quantity: number,
         public status: ReplenishmentRequestStatus,
-        public createdAt: Date
+        public createdAt: Date,
     ) { }
 }
