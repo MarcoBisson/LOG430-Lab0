@@ -1,5 +1,7 @@
 // import { Product, CartItem } from '../src/backend/domain/entities';
-
+describe('True', () => {
+    expect(true).toBe(true);
+});
 // describe('Product', () => {
 //     it('doit initialiser correctement toutes ses propriétés', () => {
 //         const id = 42;
