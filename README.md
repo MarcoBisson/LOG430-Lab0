@@ -1,4 +1,4 @@
-# LOG430 - Laboratoire 1 : Architecture 3-tiers et Persistance
+# Labo 3 – Exposition d’une API RESTful pour un système multi-magasins
 
 ## Description
 
@@ -9,38 +9,6 @@ Ce projet implémente un **système de point de vente** complet pour un petit ma
 - **Persistance** : Base de données PostgreSQL avec couche d'abstraction Prisma ORM
 
 Le but est de consolider les concepts d'architecture multicouche, d'APIs REST, et d'abstraction de la persistance, tout en appliquant les bonnes pratiques CI/CD (lint, tests unitaires, conteneurisation Docker).
-
-## Objectifs d'apprentissage
-
-- Concevoir une architecture 3-tiers (présentation React, API REST, base de données)
-- Implémenter une API REST avec Express.js et TypeScript
-- Développer une interface utilisateur moderne avec React
-- Implémenter une couche de persistance abstraite avec Prisma ORM
-- Documenter et justifier les décisions d'architecture (diagrammes UML, ADRs)
-- Conteneuriser l'application complète avec Docker et Docker Compose
-- Mettre en place une pipeline CI/CD automatisant lint, tests et build Docker
-
-## Analyse des besoins
-
-**Fonctionnels** :
-
-1. **Gestion des produits** : Ajouter, modifier, supprimer et rechercher des produits par identifiant, nom ou catégorie
-2. **Gestion des ventes** : Sélection de produits, calcul automatique du total, création de transactions, mise à jour du stock
-3. **Gestion des retours** : Annulation de ventes existantes avec restitution automatique du stock
-4. **Gestion des stocks** : Consultation en temps réel, mise à jour automatique, alertes de stock faible
-5. **Gestion logistique** : Gestion des transferts entre magasins, réapprovisionnement
-6. **Rapports et analytics** : Tableaux de bord des ventes, statistiques de performance
-7. **Authentification et autorisation** : Système de connexion avec rôles utilisateur (Admin, Manager, Cashier)
-
-**Non-fonctionnels** :
-
-1. **Robustesse** : Gestion complète des erreurs (stock insuffisant, utilisateur non autorisé, etc.)
-2. **Interface moderne** : Interface web responsive et intuitive
-3. **Performance** : API REST optimisée, temps de réponse rapide
-4. **Sécurité** : Authentification JWT, validation des données, autorisation par rôles
-5. **Portabilité** : Application entièrement conteneurisée avec Docker
-6. **Testabilité** : Tests automatisés unitaires et d'intégration
-7. **Documentation** : API documentée avec Swagger/OpenAPI
 
 ## Choix technologiques
 
