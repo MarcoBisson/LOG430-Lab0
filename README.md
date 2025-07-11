@@ -141,7 +141,7 @@ docker-compose down
 
 **1. Lancer la base de données :**
 ```bash
-docker-compose up db -db
+docker-compose up db -d
 ```
 
 **2. Configuration de la base de données :**
