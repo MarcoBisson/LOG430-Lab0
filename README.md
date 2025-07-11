@@ -1,149 +1,314 @@
-# LOG430 - Laboratoire 1 : Architecture 2-tier (Client/Serveur) et Persistance
+# LOG430 - Laboratoire 1 : Architecture 3-tiers et Persistance
 
 ## Description
 
-Ce projet implémente un **système de point de vente** simple pour un petit magasin de quartier. L'application suit une architecture **2-tiers** :
+Ce projet implémente un **système de point de vente** complet pour un petit magasin de quartier. L'application suit une architecture **3-tiers** :
 
-- **Client** : application console TypeScript/Node.js interactive  
-- **Serveur** : base de données PostgreSQL avec couche d'abstraction Prisma ORM  
+- **Présentation** : Interface web React avec TypeScript pour l'interaction utilisateur
+- **Logique métier** : API REST Express.js avec TypeScript gérant la logique d'affaires
+- **Persistance** : Base de données PostgreSQL avec couche d'abstraction Prisma ORM
 
-Le but est de consolider les concepts d'architecture client/serveur et d'abstraction de la persistance, tout en appliquant les bonnes pratiques CI/CD (lint, tests unitaires, build Docker).
+Le but est de consolider les concepts d'architecture multicouche, d'APIs REST, et d'abstraction de la persistance, tout en appliquant les bonnes pratiques CI/CD (lint, tests unitaires, conteneurisation Docker).
 
 ## Objectifs d'apprentissage
 
-- Concevoir une architecture 2-tiers (client console et base de données)  
-- Implémenter une couche de persistance abstraite
-- Documenter et justifier les décisions d'architecture (diagrammes UML, ADRs)  
-- Conteneuriser l'application avec Docker et Docker Compose  
+- Concevoir une architecture 3-tiers (présentation React, API REST, base de données)
+- Implémenter une API REST avec Express.js et TypeScript
+- Développer une interface utilisateur moderne avec React
+- Implémenter une couche de persistance abstraite avec Prisma ORM
+- Documenter et justifier les décisions d'architecture (diagrammes UML, ADRs)
+- Conteneuriser l'application complète avec Docker et Docker Compose
 - Mettre en place une pipeline CI/CD automatisant lint, tests et build Docker
 
 ## Analyse des besoins
 
 **Fonctionnels** :
 
-1. Ajouter un produit
-2. Recherche de produit : par identifiant, nom (contient), ou catégorie (exact).
-3. Enregistrement d'une vente : sélection de plusieurs produits, calcul du total, création de la transaction, mise à jour automatique du stock. 
-4. Gestion des retours : annulation d'une vente existante, restitution du stock.
-5. Consultation du stock : affichage de l'état actuel des stocks de tous les produits.
+1. **Gestion des produits** : Ajouter, modifier, supprimer et rechercher des produits par identifiant, nom ou catégorie
+2. **Gestion des ventes** : Sélection de produits, calcul automatique du total, création de transactions, mise à jour du stock
+3. **Gestion des retours** : Annulation de ventes existantes avec restitution automatique du stock
+4. **Gestion des stocks** : Consultation en temps réel, mise à jour automatique, alertes de stock faible
+5. **Gestion logistique** : Gestion des transferts entre magasins, réapprovisionnement
+6. **Rapports et analytics** : Tableaux de bord des ventes, statistiques de performance
+7. **Authentification et autorisation** : Système de connexion avec rôles utilisateur (Admin, Manager, Cashier)
 
 **Non-fonctionnels** :
 
-1. Robustesse : gestion des erreurs (stock insuffisant, ID introuvable, etc.).
-2. Simplicité : interface console, sans serveur HTTP.
-3. Performance : latence réduite, temps de réponse interactif.
-4. Portabilité : conteneurisé via Docker, base de données PostgreSQL locale.
-5. Testabilité : tests automatisés de toutes les fonctionnalités 
+1. **Robustesse** : Gestion complète des erreurs (stock insuffisant, utilisateur non autorisé, etc.)
+2. **Interface moderne** : Interface web responsive et intuitive
+3. **Performance** : API REST optimisée, temps de réponse rapide
+4. **Sécurité** : Authentification JWT, validation des données, autorisation par rôles
+5. **Portabilité** : Application entièrement conteneurisée avec Docker
+6. **Testabilité** : Tests automatisés unitaires et d'intégration
+7. **Documentation** : API documentée avec Swagger/OpenAPI
 
 ## Choix technologiques
 
 | Composant         | Choix                     | Justification                                                   |
 |-------------------|---------------------------|-----------------------------------------------------------------|
-| Langage           | TypeScript / Node.js      | Typage, productivité, écosystème mature                         |
-| ORM               | Prisma                    | Migrations faciles, gestion des transactions, TS-first, schema des tables dans le code                                                                                                              |
-| Base de données   | PostgreSQL                | Fiabilité, transactions ACID, support local via Docker          |
-| Console UI        | Inquirer.js               | Prompts interactifs, facile à intégrer                          |
-| Tests             | Jest                      | Couverture, mocks, intégration simple avec TypeScript           |
-| Linter            | ESLint                    | Qualité de code, évolue souvent                                 |
-| CI/CD             | GitHub Actions            | Intégration GitHub (où se trouve mon repo), pipelines simples   |
-| Conteneurisation  | Docker + Compose          | Reproductibilité, portabilité, orchestration locale             |
+| Frontend          | React + TypeScript        | Composants réutilisables, typage fort, écosystème mature        |
+| Backend           | Express.js + TypeScript   | API REST simple, middleware flexibles, typage fort              |
+| Base de données   | PostgreSQL                | Fiabilité, transactions ACID, support avancé des requêtes       |
+| ORM               | Prisma                    | Migrations faciles, client type-safe, intégration TypeScript    |
+| Authentification  | JWT + bcrypt              | Stateless, sécurisé, standard industrie                         |
+| UI/Build          | Vite                      | Build rapide, HMR, optimisations modernes                       |
+| Tests             | Jest                      | Couverture complète, mocks faciles, intégration TypeScript      |
+| Linter            | ESLint                    | Qualité de code, règles configurables                           |
+| Documentation API | Swagger/OpenAPI           | Documentation interactive, génération automatique               |
+| CI/CD             | GitHub Actions            | Intégration native GitHub, pipelines simples                    |
+| Conteneurisation  | Docker + Compose          | Reproductibilité, isolation, orchestration multi-services       |
+
+## Architecture du système
+
+L'application suit une architecture 3-tiers claire :
+
+```
+┌─────────────────┐    HTTP/REST   ┌─────────────────┐    SQL/ORM    ┌─────────────────┐
+│   Frontend      │◄──────────────►│     Backend     │◄─────────────►│   PostgreSQL    │
+│   React + TS    │                │  Express + TS   │               │   Database      │
+│                 │                │                 │               │                 │
+│ • Components    │                │ • Controllers   │               │ • Tables        │
+│ • Stores        │                │ • Services      │               │ • Relations     │
+│ • API Client    │                │ • Repositories  │               │ • Constraints   │
+│ • Routing       │                │ • Middleware    │               │ • Indexes       │
+└─────────────────┘                └─────────────────┘               └─────────────────┘
+```
 
 ## Structure du projet
 
 ```
 LOG430-Lab0/
-├── src/                   # Code TypeScript
-│   ├── domain/            # Entités & services métier
-│   ├── infrastructure/    # PrismaRepository, schéma Prisma
-│   └── presentation/      # index.ts (console UI)
-├── prisma/                # schéma & migrations
-├── tests/                 # Tests unitaires (Jest)
-├── docs/                  # Documentation (ADRs, UML)
-├── .env                   # Variables d’environnement
-├── Dockerfile             # Build de l’application
-├── docker-compose.yml     # Orchestration (app + postgres)
-├── jest.config.js         # Configuration Jest
-├── tsconfig.json          # Configuration TypeScript
-├── .eslintrc.cjs          # Configuration ESLint
-├── package.json           # Dépendances & scripts
-└── README.md              # Ce fichier
+├── src/
+│   ├── backend/               # API REST Express.js
+│   │   ├── application/       # Services de logique métier
+│   │   ├── domain/           # Entités et interfaces métier
+│   │   ├── infrastructure/   # Repositories Prisma, configs
+│   │   ├── interfaces/       # Controllers, routes, middlewares
+│   │   ├── doc_swagger/      # Documentation API générée
+│   │   ├── server.ts         # Point d'entrée du serveur
+│   │   └── Dockerfile        # Build backend
+│   │
+│   └── frontend/             # Application React
+│       ├── src/
+│       │   ├── components/   # Composants React réutilisables
+│       │   ├── pages/        # Pages de l'application
+│       │   ├── stores/       # Gestion d'état (Zustand)
+│       │   ├── APIs/         # Client API REST
+│       │   ├── DTOs/         # Types TypeScript
+│       │   └── utils/        # Utilitaires
+│       ├── public/           # Assets statiques
+│       ├── index.html        # Point d'entrée HTML
+│       └── Dockerfile        # Build frontend
+│
+├── prisma/                   # Configuration base de données
+│   ├── schema.prisma         # Schéma de la DB
+│   ├── seed.ts              # Données de test
+│   └── migrations/          # Migrations versionnées
+│
+├── tests/                    # Tests automatisés
+│   ├── unit/                # Tests unitaires
+│   └── mocks/               # Mocks pour les tests
+│
+├── docs/                     # Documentation
+│   ├── ADR/                 # Architecture Decision Records
+│   └── UML/                 # Diagrammes UML
+│
+├── coverage/                 # Rapports de couverture
+├── docker-compose.yml        # Orchestration des services
+├── package.json              # Dépendances et scripts
+└── README.md                 # Ce fichier
 ```
 
 ## Prérequis
 
-- Node.js = v20  
-- npm  
-- Docker & Docker Compose  
-- PostgreSQL (via Docker Compose ou service local)
-- .env (`DATABASE_URL="postgresql://admin:admin@localhost:5432/posdb?schema=public"`)
+- **Node.js** v20 ou supérieur
+- **npm** (inclus avec Node.js)
+- **Docker** et **Docker Compose**
+- **Git** pour cloner le repository
 
-## Installation
+## Installation et lancement
 
+### 1. Cloner le projet
 ```bash
 git clone https://github.com/MarcoBisson/LOG430-Lab0.git
 cd LOG430-Lab0
+```
+
+### 2. Installation des dépendances
+```bash
 npm install
 ```
 
-## Configuration de la base de données
-1. Créez un fichier `.env` à la racine:
+### 3. Configuration de l'environnement
+Créez un fichier `.env` à la racine du projet :
 ```bash
 DATABASE_URL="postgresql://admin:admin@localhost:5432/posdb?schema=public"
 ```
-2. Ajouter des tables:
-```bash
-# Modifiez prisma/schema.prisma
-npx prisma migrate dev --name <nom_migration>
-npx prisma generate
-```
-3. Visualiser la base de données:
-```bash
-npm run studio
-```
-4. Réinitialiser la base de données:
-```bash
-npm run db-reset
-```
 
-## Exécution locale (hors conteneur)
+## Lancement de l'application
+
+### Option 1 : Avec Docker (Recommandé)
+
+**Lancement complet avec Docker Compose :**
 ```bash
-npm run build
-npm run start
+# Construire et lancer tous les services (base de données, backend, frontend)
+docker-compose up --build
+
+# En mode détaché (arrière-plan)
+docker-compose up -d --build
 ```
 
-## Exécuter les tests
+**Accès aux services :**
+- **Frontend** : http://localhost:5173
+- **Backend API** : http://localhost:3000
+- **Documentation Swagger** : http://localhost:3000/api-docs
+- **Base de données** : localhost:5432
+
+**Arrêter les services :**
 ```bash
-npm run test
-```
-
-## Exécution avec Docker
-```bash
-# Build de l'image
-docker-compose build
-
-# Lancer l'app avec console interactive
-docker-compose run --rm app
-
-# Fermer les conteneur
 docker-compose down
 ```
 
+### Option 2 : Développement local
+
+**1. Lancer la base de données :**
+```bash
+docker-compose up db -db
+```
+
+**2. Configuration de la base de données :**
+```bash
+# Appliquer les migrations
+npx prisma migrate dev --name <nom_migration>
+
+# Générer le client Prisma
+npx prisma generate
+
+# Peupler avec des données de test
+npx prisma db seed
+
+# Réinitialiser les données
+npm run db-reset
+```
+
+**3. Lancer le backend :**
+```bash
+# Mode développement avec rechargement automatique
+npm run dev:backend
+
+# Ou build + start
+npm run build:backend
+npm run start:backend
+```
+
+**4. Lancer le frontend :**
+```bash
+# Mode développement
+npm run start:frontend
+
+# Ou build + preview
+npm run build:frontend
+npm run preview:frontend
+```
+
+## Commandes utiles
+
+### Base de données
+```bash
+# Visualiser la base de données avec Prisma Studio
+npm run studio
+
+# Réinitialiser la base de données
+npm run db-reset
+
+# Générer la documentation Swagger
+npm run generate:swagger
+```
+
+### Tests et qualité
+```bash
+# Exécuter tous les tests avec couverture
+npm test
+
+# Linter (vérification du code)
+npm run lint
+
+# Correction automatique du linting
+npm run lint:fix
+```
+
+### Build
+```bash
+# Build complet (backend + frontend)
+npm run build
+
+# Build backend seulement
+npm run build:backend
+
+# Build frontend seulement
+npm run build:frontend
+```
+
+## Fonctionnement de l'application
+
+### Interface utilisateur
+L'application dispose d'une interface web moderne développée avec React qui permet :
+
+- **Tableau de bord** : Vue d'ensemble des ventes, stocks et statistiques
+- **Gestion des produits** : Ajouter, modifier, rechercher et gérer l'inventaire
+- **Point de vente** : Interface de caisse pour enregistrer les ventes
+- **Gestion des retours** : Traitement des retours et remboursements
+- **Rapports** : Analyses des ventes et performance du magasin
+- **Administration** : Gestion des utilisateurs et configuration
+
+### API REST
+Le backend expose une API REST complète avec les endpoints suivants :
+
+- `GET/POST/PUT/DELETE /api/products` - Gestion des produits
+- `GET/POST /api/sales` - Enregistrement et consultation des ventes
+- `GET/POST /api/returns` - Gestion des retours
+- `GET /api/reports` - Génération de rapports
+- `GET/POST /api/stock` - Gestion des stocks et inventaire
+- `GET/POST /api/logistics` - Transferts et réapprovisionnement
+- `POST /api/auth/login` - Authentification utilisateur
+
+### Base de données
+Le schéma de base de données inclut :
+
+- **Products** : Catalogue des produits avec catégories et prix
+- **Sale** : Transactions de vente avec détails des articles
+- **SaleItem** : Produits vendus dans chaque transaction
+- **Return** : Retours de marchandise
+- **Stock** : Niveaux de stock par magasin
+- **StoreStock** : Quantité d'un produit dans un magasin
+- **User** : Utilisateurs avec rôles et permissions
+- **Store** : Gestion multi-magasins
+
+### Sécurité et authentification
+- Authentification JWT avec rôles utilisateur (ADMIN, LOGISTICS, STAFF, CLIENT)
+- Validation des données côté serveur
+- Middleware d'autorisation pour protéger les endpoints sensibles
+- Hashage des mots de passe
+
 ## Pipeline CI/CD
-La pipeline CI/CD (lint, tests, build et push) s'exécute automatiquement à chaque push, pull request ou déclenchement manuel. Voici le diagramme Mermaid détaillant chaque étape de la pipeline :
+
+La pipeline CI/CD (lint, tests, build et push) s'exécute automatiquement sur GitHub Actions lors de chaque push/pull request ou déclenchement manuel. Voici le diagramme Mermaid détaillé :
 
 <details>
 <summary>Afficher le graphique des steps du CI/CD avec Mermaid</summary>
 
 ```mermaid
 flowchart TD
-    A["Checkout code"]
-    B["Set up Node.js"]
-    C["Install dependencies: npm ci"]
-    D["Run linters: lint"]
-    E["Run tests: jest"]
-    F["Set up Docker Buildx"]
-    G["Log in to Docker Hub"]
-    H["Build and push Docker image"]
+    A["📥 Checkout code"]
+    B["⚙️ Set up Node.js v20"]
+    C["📦 Install dependencies: npm ci"]
+    D["🔍 Run linters: npm run lint"]
+    E["🧪 Run tests: npm test"]
+    F["📊 Generate coverage report"]
+    G["🐳 Set up Docker Buildx"]
+    H["🔐 Log in to Docker Hub"]
+    I["🏗️ Build Docker images"]
+    J["📤 Push to registry"]
 
     A --> B
     B --> C
@@ -152,10 +317,18 @@ flowchart TD
     E --> F
     F --> G
     G --> H
-
+    H --> I
+    I --> J
 ```
+
 </details>
 
-#### Exemple de résultat pipeline
+### Technologies utilisées dans la pipeline
+- **GitHub Actions** pour l'orchestration
+- **ESLint** pour la qualité du code
+- **Jest** pour les tests unitaires avec couverture
+- **Docker Multi-stage builds** pour l'optimisation des images
+- **Docker Hub** pour le registry d'images
 
+#### Exemple de résultat pipeline
 ![Workflow passed!](screenshots/CIisWorking.png)
