@@ -47,7 +47,7 @@ export class MockSaleRepository implements ISaleRepository {
 
     async groupSalesByStore(_userId: number, _startDate?: Date, _endDate?: Date): Promise<{ storeId: number; totalQuantity: number }[]> {
         const storeMap = new Map<number, number>();
-        
+
         this.sales.forEach(sale => {
             const totalQuantity = sale.saleItems.reduce((sum, item) => sum + item.quantity, 0);
             storeMap.set(sale.storeId, (storeMap.get(sale.storeId) || 0) + totalQuantity);
@@ -61,7 +61,7 @@ export class MockSaleRepository implements ISaleRepository {
 
     async getTopProducts(_userId: number, limit: number, _startDate?: Date, _endDate?: Date): Promise<{ productId: number; totalQuantity: number }[]> {
         const productMap = new Map<number, number>();
-        
+
         this.sales.forEach(sale => {
             sale.saleItems.forEach(item => {
                 productMap.set(item.productId, (productMap.get(item.productId) || 0) + item.quantity);

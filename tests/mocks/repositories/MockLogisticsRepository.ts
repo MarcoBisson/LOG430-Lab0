@@ -24,8 +24,19 @@ export class MockLogisticsRepository implements ILogisticsRepository {
         this.nextRequestId = 1;
     }
 
-    async findAllCentralStock(): Promise<{ productId: number; stock: number }[]> {
-        return [...this.centralStock];
+    async findAllCentralStock(page?: number, limit?: number): Promise<{ products: { productId: number; stock: number; name: string }[]; total: number }> {
+        // Simule la pagination si page et limit sont fournis, sinon retourne tout
+        let products = this.centralStock.map(s => ({
+            productId: s.productId,
+            stock: s.stock,
+            name: `Produit ${s.productId}`,
+        }));
+        const total = products.length;
+        if (typeof page === 'number' && typeof limit === 'number') {
+            const start = (page - 1) * limit;
+            products = products.slice(start, start + limit);
+        }
+        return { products, total };
     }
 
     async decrementCentralStock(_storeId: number, productId: number, qty: number): Promise<StoreStock> {

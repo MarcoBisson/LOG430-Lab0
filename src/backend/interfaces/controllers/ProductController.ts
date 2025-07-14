@@ -4,6 +4,7 @@ import { PrismaProductRepository } from '../../infrastructure/prisma/PrismaProdu
 import type { AuthenticatedRequest } from '../middlewares/authentificateJWT';
 import { UserRole } from '@prisma/client';
 import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
+import { errorResponse } from '../../utils/errorResponse';
 
 const productRepository = new PrismaProductRepository();
 const productService = new ProductService(productRepository);
@@ -27,7 +28,11 @@ export class ProductController {
      */
     static async get(req: AuthenticatedRequest, res: Response) {
         const p = await productService.getProductById(+req.params.id);
-        p ? res.json(p) : res.status(404).json({ error: 'Not found' });
+        if (p) {
+            res.json(p);
+        } else {
+            errorResponse(res, 404, 'Not Found', 'Produit non trouvé', req.originalUrl);
+        }
     }
 
     /**
@@ -37,7 +42,11 @@ export class ProductController {
      */
     static async getByName(req: AuthenticatedRequest, res: Response) {
         const p = await productService.getProductsByName(req.params.name);
-        p ? res.json(p) : res.status(404).json({ error: 'Not found' });
+        if (p) {
+            res.json(p);
+        } else {
+            errorResponse(res, 404, 'Not Found', 'Produit non trouvé', req.originalUrl);
+        }
     }
 
     /**
@@ -47,7 +56,11 @@ export class ProductController {
      */
     static async getByCategory(req: AuthenticatedRequest, res: Response) {
         const p = await productService.getProductsByCategory(req.params.category);
-        p ? res.json(p) : res.status(404).json({ error: 'Not found' });
+        if (p.length > 0) {
+            res.json(p);
+        } else {
+            errorResponse(res, 404, 'Not Found', 'Produit non trouvé', req.originalUrl);
+        }
     }
 
     /**
@@ -60,7 +73,7 @@ export class ProductController {
             const p = await productService.createProduct(+req.params.id, req.body);
             res.status(201).json(p);
         } else {
-            res.status(401).json({ error: 'Action Unauthorized' });
+            errorResponse(res, 401, 'Unauthorized', 'Action Unauthorized', req.originalUrl);
         }
     }
 
@@ -74,7 +87,7 @@ export class ProductController {
             const p = await productService.updateProduct(+req.params.productId,+req.params.storeId, req.body);
             res.json(p);
         } else {
-            res.status(401).json({ error: 'Action Unauthorized' });
+            errorResponse(res, 401, 'Unauthorized', 'Action Unauthorized', req.originalUrl);
         }
     }
 
@@ -88,7 +101,7 @@ export class ProductController {
             await productService.deleteProduct(+req.params.id);
             res.status(204).end();
         } else {
-            res.status(401).json({ error: 'Action Unauthorized' });
+            errorResponse(res, 401, 'Unauthorized', 'Action Unauthorized', req.originalUrl);
         }
     }
 
@@ -99,18 +112,25 @@ export class ProductController {
      */
      static async getByStore(req: AuthenticatedRequest, res: Response) {
         const storeId = req.params.id;
+        const query = req.query || {};
+        const page = query.page ? parseInt(query.page as string) : undefined;
+        const limit = query.limit ? parseInt(query.limit as string) : undefined;
 
         if (req.user){
             const access = await userRepository.getUserAccess(req.user.id);
 
             if (access.find( store => store.id === +storeId)){
-                const p = await productService.getProductsByStore(+storeId);
-                p ? res.json(p) : res.status(404).json({ error: 'Not found' });
+                const p = await productService.getProductsByStore(+storeId, page, limit);
+                if (p && p.products && p.products.length > 0) {
+                    res.json(p);
+                } else {
+                    errorResponse(res, 404, 'Not Found', 'Produit non trouvé', req.originalUrl);
+                }
             } else {
-                res.status(401).json({ error: 'Acces Unauthorized' });
+                errorResponse(res, 401, 'Unauthorized', 'Acces Unauthorized', req.originalUrl);
             }
         } else {
-            res.status(403).json({ error: 'Invalid token' });
+            errorResponse(res, 403, 'Forbidden', 'Invalid token', req.originalUrl);
         }
     }
 }

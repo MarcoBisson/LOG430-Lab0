@@ -56,6 +56,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.ADMIN,
             };
+            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -91,6 +92,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.STAFF,
             };
+            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -124,6 +126,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.CLIENT,
             };
+            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -161,6 +164,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.ADMIN,
             };
+            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -198,6 +202,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.ADMIN,
             };
+            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -216,12 +221,19 @@ describe('ReportController', () => {
         test('should return 403 when no user is provided', async () => {
             req.query = {};
             req.user = undefined;
+            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
 
             await ReportController.consolidated(req as AuthenticatedRequest, res as Response);
 
             expect(mockReportService.getConsolidatedReport).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(403);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Invalid token' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 403,
+                error: 'Forbidden',
+                message: 'Invalid token',
+                path: undefined,
+                timestamp: expect.any(String), 
+            }));
         });
 
         test('should handle service errors and return 500', async () => {
@@ -232,13 +244,20 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.ADMIN,
             };
+            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
 
             mockReportService.getConsolidatedReport.mockRejectedValue(new Error('Service error'));
 
             await ReportController.consolidated(req as AuthenticatedRequest, res as Response);
 
             expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Erreur interne du serveur' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 500,
+                error: 'Internal Server Error',
+                message: 'Service error',
+                path: undefined,
+                timestamp: expect.any(String), 
+            }));
         });
 
         test('should handle invalid date formats', async () => {
@@ -258,6 +277,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.ADMIN,
             };
+            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -304,5 +324,51 @@ describe('ReportController', () => {
             );
             expect(res.json).toHaveBeenCalledWith(mockReport);
         });
+    });
+    test('should handle error in consolidated', async () => {
+        const req: any = { user: { id: 1 }, originalUrl: '/api/reports/consolidated' };
+        const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+        (ReportController as any).reportService = { getConsolidatedReport: jest.fn().mockRejectedValue(new Error('fail')) };
+        await ReportController.consolidated(req, res);
+        expect(res.status).toHaveBeenCalledWith(500);
+    });
+
+    test('should return result if limit and stockOffset are provided', async () => {
+        const req: any = {
+            user: { id: 1, role: UserRole.ADMIN },
+            query: { limit: '10', stockOffset: '5' },
+            originalUrl: '/api/reports/consolidated',
+        };
+        const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+        const mockReport = {
+                sales: [],
+                products: [],
+                stock: [],
+            };
+         mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
+
+        await ReportController.consolidated(req as AuthenticatedRequest, res as Response);
+        expect(mockReportService.getConsolidatedReport).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 1,
+                role: UserRole.ADMIN,
+            }),
+            expect.objectContaining({
+                limit: 10,
+                stockOffset: 5,
+            }),
+        );
+    });
+
+    test('should return 500 if user is not authenticated', async () => {
+        const req: any = { user: null, originalUrl: '/api/reports/consolidated' };
+        const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+        await ReportController.consolidated(req, res);
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+            status: 500,
+            error: 'Internal Server Error',
+            message: expect.any(String),
+        }));
     });
 });

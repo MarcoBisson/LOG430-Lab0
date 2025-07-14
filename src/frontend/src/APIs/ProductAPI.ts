@@ -15,8 +15,12 @@ export async function getProducts(): Promise<ProductDTO[]> {
  * @param id L'identifiant du produit à récupérer.
  * @returns Une promesse qui résout un tableau de ProductDTO.
  */
-export async function getProductsByStoreId(storeId: number): Promise<ProductDTO[]> {
-    return authFetch(`${API_BASE}/products/store/${encodeURIComponent(storeId)}`).then(r => r.json());
+export async function getProductsByStoreId(storeId: number, page?: number, limit?: number): Promise<{ products: ProductDTO[]; total: number }> {
+    const params = [];
+    if (page !== undefined) params.push(`page=${page}`);
+    if (limit !== undefined) params.push(`limit=${limit}`);
+    const query = params.length ? `?${params.join('&')}` : '';
+    return authFetch(`${API_BASE}/products/store/${encodeURIComponent(storeId)}${query}`).then(r => r.json());
 }
 
 /**

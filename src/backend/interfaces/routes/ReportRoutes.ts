@@ -19,13 +19,27 @@ const reportRoutes = Router();
  *         schema:
  *           type: string
  *           format: date
- *         description: Date de début du rapport
+ *         required: false
+ *         description: Date de début du rapport (optionnel)
  *       - in: query
  *         name: endDate
  *         schema:
  *           type: string
  *           format: date
- *         description: Date de fin du rapport
+ *         required: false
+ *         description: Date de fin du rapport (optionnel)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Nombre d'éléments par page pour les tableaux paginés (optionnel)
+ *       - in: query
+ *         name: stockOffset
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Décalage pour la pagination du stock central (optionnel)
  *     responses:
  *       200:
  *         description: Rapport consolidé récupéré avec succès
@@ -33,7 +47,38 @@ const reportRoutes = Router();
  *           application/json:
  *             schema:
  *               type: object
- *               additionalProperties: true
+ *               properties:
+ *                 salesByStore:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       storeId:
+ *                         type: integer
+ *                       totalQuantity:
+ *                         type: integer
+ *                 topProducts:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       productId:
+ *                         type: integer
+ *                       totalQuantity:
+ *                         type: integer
+ *                 centralStock:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       productId:
+ *                         type: integer
+ *                       stock:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                 centralStockTotal:
+ *                   type: integer
  *       403:
  *         description: Jeton invalide
  *         content:

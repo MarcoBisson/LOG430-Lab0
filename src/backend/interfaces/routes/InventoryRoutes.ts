@@ -7,20 +7,45 @@ const inventoryRoutes = Router();
  * @openapi
  * /api/stock/central:
  *   get:
- *     summary: Récupère le stock central
+ *     summary: Récupère le stock central (paginé)
  *     tags:
  *       - Inventaire
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Page de pagination (optionnel)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Nombre d'éléments par page (optionnel)
  *     responses:
  *       200:
  *         description: Stock central récupéré avec succès
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/ProductStock'
+ *               type: object
+ *               properties:
+ *                 products:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       productId:
+ *                         type: integer
+ *                       stock:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                 total:
+ *                   type: integer
  *       401:
  *         description: Accès non autorisé (CLIENT)
  *         content:
@@ -28,14 +53,11 @@ const inventoryRoutes = Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-
-inventoryRoutes.get('/central', authenticateJWT, InventoryController.central);
-
 /**
  * @openapi
  * /api/stock/store/{storeId}:
  *   get:
- *     summary: Récupère le stock d’un magasin spécifique
+ *     summary: Récupère le stock d’un magasin spécifique (paginé)
  *     tags:
  *       - Inventaire
  *     security:
@@ -47,15 +69,32 @@ inventoryRoutes.get('/central', authenticateJWT, InventoryController.central);
  *         schema:
  *           type: integer
  *         description: ID du magasin
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Page de pagination (optionnel)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Nombre d'éléments par page (optionnel)
  *     responses:
  *       200:
  *         description: Stock du magasin récupéré avec succès
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/ProductStock'
+ *               type: object
+ *               properties:
+ *                 products:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/ProductStock'
+ *                 total:
+ *                   type: integer
  *       401:
  *         description: Accès non autorisé
  *         content:
@@ -70,6 +109,7 @@ inventoryRoutes.get('/central', authenticateJWT, InventoryController.central);
  *               $ref: '#/components/schemas/Error'
  */
 
+inventoryRoutes.get('/central', authenticateJWT, InventoryController.central);
 inventoryRoutes.get('/store/:storeId', authenticateJWT, InventoryController.store);
 
 export default inventoryRoutes;

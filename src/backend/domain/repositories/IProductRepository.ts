@@ -63,5 +63,5 @@ export interface IProductRepository {
      * @param storeId - L'ID du store.
      * @returns La liste des produits correspondants.
      */
-    findProductsByStore(storeId: number): Promise<ProductStock[]>;
+    findProductsByStore(storeId: number, limit?: number, page?:number): Promise<{ products: ProductStock[]; total: number }>;
 }

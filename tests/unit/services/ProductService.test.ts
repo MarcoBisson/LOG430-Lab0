@@ -198,16 +198,35 @@ describe('ProductService', () => {
         it('should return products with stock information', async () => {
             const result = await productService.getProductsByStore(1);
 
-            expect(result).toHaveLength(2);
-            expect(result[0]).toBeInstanceOf(ProductStock);
-            expect(result[0].stock).toBe(5);
-            expect(result[1].stock).toBe(10);
+            expect(result.products[0]).toBeInstanceOf(ProductStock);
+            expect(result.products[0].stock).toBe(5);
+            expect(result.products[1].stock).toBe(10);
         });
 
         it('should return empty array for store with no products', async () => {
             mockProductRepository.clear();
             const result = await productService.getProductsByStore(1);
-            expect(result).toHaveLength(0);
+            expect(result.products).toHaveLength(0);
         });
+    });
+    test('should set stock to 0 if input.stock is undefined', async () => {
+        const mockProductRepo = {
+            createProduct: jest.fn().mockResolvedValue({
+                id: 1,
+                name: 'Test',
+                price: 10,
+                description: null,
+                category: null,
+                stock: 0,
+            }),
+        };
+        const service = new ProductService(mockProductRepo as any);
+
+        await service.createProduct(1, {
+            name: 'Test',
+            price: 10,
+        } as any);
+
+        expect(mockProductRepo.createProduct).toHaveBeenCalledWith(1, expect.objectContaining({ stock: 0 }));
     });
 });

@@ -32,20 +32,23 @@ describe('ReportService', () => {
                 { productId: 2, totalQuantity: 30 },
             ];
             const centralStock = [
-                { productId: 1, stock: 100 },
-                { productId: 2, stock: 75 },
+                { productId: 1, stock: 100, name: 'Produit 1' },
+                { productId: 2, stock: 75, name: 'Produit 2' },
             ];
 
             jest.spyOn(mockSaleRepository, 'groupSalesByStore').mockResolvedValue(salesByStore);
             jest.spyOn(mockSaleRepository, 'getTopProducts').mockResolvedValue(topProducts);
-            jest.spyOn(mockLogisticsRepository, 'findAllCentralStock').mockResolvedValue(centralStock);
+            jest.spyOn(mockLogisticsRepository, 'findAllCentralStock').mockResolvedValue({
+                products: centralStock.map(s => ({ ...s, name: `Produit ${s.productId}` })),
+                total: centralStock.length,
+            });
 
             const result = await reportService.getConsolidatedReport(adminUser as any);
 
             expect(result.salesByStore).toEqual(salesByStore);
             expect(result.topProducts).toEqual(topProducts);
             expect(result.centralStock).toEqual(centralStock);
-            expect(mockSaleRepository.groupSalesByStore).toHaveBeenCalledWith(1, undefined, undefined);
+            expect(mockSaleRepository.groupSalesByStore).toHaveBeenCalledWith(1, undefined, undefined, undefined);
             expect(mockSaleRepository.getTopProducts).toHaveBeenCalledWith(1, 10, undefined, undefined);
             expect(mockLogisticsRepository.findAllCentralStock).toHaveBeenCalled();
         });
@@ -64,7 +67,10 @@ describe('ReportService', () => {
 
             jest.spyOn(mockSaleRepository, 'groupSalesByStore').mockResolvedValue(salesByStore);
             jest.spyOn(mockSaleRepository, 'getTopProducts').mockResolvedValue(topProducts);
-            jest.spyOn(mockLogisticsRepository, 'findAllCentralStock').mockResolvedValue([]);
+            jest.spyOn(mockLogisticsRepository, 'findAllCentralStock').mockResolvedValue({
+                products: [],
+                total: 0,
+            });
 
             const result = await reportService.getConsolidatedReport(staffUser as any);
 
@@ -88,11 +94,14 @@ describe('ReportService', () => {
 
             jest.spyOn(mockSaleRepository, 'groupSalesByStore').mockResolvedValue([]);
             jest.spyOn(mockSaleRepository, 'getTopProducts').mockResolvedValue([]);
-            jest.spyOn(mockLogisticsRepository, 'findAllCentralStock').mockResolvedValue([]);
+            jest.spyOn(mockLogisticsRepository, 'findAllCentralStock').mockResolvedValue({
+                products: [],
+                total: 0,
+            });
 
             await reportService.getConsolidatedReport(adminUser as any, { startDate, endDate });
 
-            expect(mockSaleRepository.groupSalesByStore).toHaveBeenCalledWith(1, startDate, endDate);
+            expect(mockSaleRepository.groupSalesByStore).toHaveBeenCalledWith(1, startDate, endDate, undefined);
             expect(mockSaleRepository.getTopProducts).toHaveBeenCalledWith(1, 10, startDate, endDate);
         });
 
@@ -114,5 +123,42 @@ describe('ReportService', () => {
             expect(result.topProducts).toEqual([]);
             expect(result.centralStock).toEqual([]);
         });
+    });
+    it('should not set centralStock for non-admin user', async () => {
+        const user = { id: 1, role: 'STAFF' };
+        jest.spyOn(mockSaleRepository, 'groupSalesByStore').mockResolvedValue([]);
+        jest.spyOn(mockSaleRepository, 'getTopProducts').mockResolvedValue([]);
+        const result = await reportService.getConsolidatedReport(user as any);
+        expect(result.centralStock).toEqual([]);
+        expect(result.centralStockTotal).toBe(0);
+    });
+
+    it('should cover centralStock slice fallback (offset/limit undefined)', async () => {
+        const user = { id: 1, role: 'ADMIN' };
+        jest.spyOn(mockSaleRepository, 'groupSalesByStore').mockResolvedValue([]);
+        jest.spyOn(mockSaleRepository, 'getTopProducts').mockResolvedValue([]);
+        jest.spyOn(mockLogisticsRepository, 'findAllCentralStock').mockResolvedValue({
+            products: [{ productId: 1, stock: 10, name: 'A' }, { productId: 2, stock: 20, name: 'B' }], total: 2,
+        });
+        const result = await reportService.getConsolidatedReport(user as any, {});
+        expect(result.centralStock.length).toBe(2);
+        expect(result.centralStockTotal).toBe(2);
+    });
+
+    it('should cover centralStock slice with offset/limit', async () => {
+        const user = { id: 1, role: 'ADMIN' };
+        jest.spyOn(mockSaleRepository, 'groupSalesByStore').mockResolvedValue([]);
+        jest.spyOn(mockSaleRepository, 'getTopProducts').mockResolvedValue([]);
+        jest.spyOn(mockLogisticsRepository, 'findAllCentralStock').mockResolvedValue({
+            products: [
+                { productId: 1, stock: 10, name: 'A' },
+                { productId: 2, stock: 20, name: 'B' },
+                { productId: 3, stock: 30, name: 'C' },
+            ],
+            total: 3,
+        });
+        const result = await reportService.getConsolidatedReport(user as any, { stockOffset: 1, limit: 1 });
+        expect(result.centralStock.length).toBe(3);
+        expect(result.centralStock[0].productId).toBe(1);
     });
 });

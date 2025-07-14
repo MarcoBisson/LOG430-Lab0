@@ -8,19 +8,54 @@ import type { Store } from '../../domain/entities/Store';
 const prisma = new PrismaClient();
 
 export class PrismaLogisticsRepository implements ILogisticsRepository {
-    async findAllCentralStock(): Promise<{ productId: number; stock: number }[]> {
-        const storeStocks = await prisma.storeStock.findMany({
+    async findAllCentralStock(page?: number, limit?: number): Promise<{ products: { productId: number; stock: number; name: string }[]; total: number }> {
+        // Si page ou limit ne sont pas fournis, on ne fait pas de pagination
+        let skip: number | undefined = undefined;
+        let take: number | undefined = undefined;
+        let orderBy: any = undefined;
+        const paginate = typeof page === 'number' && typeof limit === 'number';
+        if (paginate) {
+            take = limit;
+            skip = page > 0 ? (page - 1) * take : 0;
+            orderBy = { productId: 'asc' };
+        }
+
+        const groupByArgs: any = {
+            by: ['productId'],
             where: {
-                store:{
-                    type: StoreType.LOGISTICS,
-                },
-              },
-              select: {
-                productId:true,
-                quantity: true,
-              },
+                store: { type: StoreType.LOGISTICS },
+            },
+            _sum: { quantity: true },
+            ...(paginate ? { orderBy } : {}),
+            ...(paginate && typeof skip === 'number' ? { skip } : {}),
+            ...(paginate && typeof take === 'number' ? { take } : {}),
+        };
+
+        const grouped = await prisma.storeStock.groupBy(groupByArgs);
+
+        // Récupère le nom des produits pour les productId concernés
+        const productIds = grouped.map(g => g.productId);
+        const productsInfo = await prisma.product.findMany({
+            where: { id: { in: productIds } },
+            select: { id: true, name: true },
         });
-        return storeStocks.map(p => ({ productId: p.productId, stock: p.quantity }));
+        const nameMap = new Map(productsInfo.map(p => [p.id, p.name]));
+
+        // Nombre total de produits distincts en stock central
+        const total = await prisma.storeStock.groupBy({
+            by: ['productId'],
+            where: { store: { type: StoreType.LOGISTICS } },
+            _sum: { quantity: true },
+        });
+
+        return {
+            products: grouped.map(g => ({
+                productId: g.productId,
+                stock: (g._sum?.quantity ?? 0),
+                name: nameMap.get(g.productId) ?? '',
+            })),
+            total: total.length,
+        };
     }
 
     async decrementCentralStock(storeId: number, productId: number, qty: number): Promise<StoreStock> {

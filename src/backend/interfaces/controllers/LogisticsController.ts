@@ -5,6 +5,7 @@ import { PrismaStoreRepository } from '../../infrastructure/prisma/PrismaStoreRe
 import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
 import type { AuthenticatedRequest } from '../middlewares/authentificateJWT';
 import { UserRole } from '@prisma/client';
+import { errorResponse } from '../../utils/errorResponse';
 
 const logisticsRepository = new PrismaLogisticsRepository();
 const storeRepository = new PrismaStoreRepository();
@@ -28,15 +29,15 @@ export class LogisticsController {
                     const result = await logisticsService.requestReplenishment(+storeId, +productId, +quantity);
                     res.status(201).json(result);
                 } else {
-                    res.status(401).json({ error: 'Acces Unauthorized' });
+                    errorResponse(res, 401, 'Unauthorized', 'Acces Unauthorized', req.originalUrl);
                 }
                 
             } else {
-                res.status(403).json({ error: 'Invalid token' });
+                errorResponse(res, 403, 'Forbidden', 'Invalid token', req.originalUrl);
             }
             
         } catch (err: any) {
-            res.status(400).json({ error: err.message });
+            errorResponse(res, 400, 'Bad Request', err.message, req.originalUrl);
         }
     }
 
@@ -52,10 +53,10 @@ export class LogisticsController {
                 const result = await logisticsService.approveReplenishment(+id);
                 res.json(result);
             } else {
-                res.status(401).json({ error: 'Acces Unauthorized' });
+                errorResponse(res, 401, 'Unauthorized', 'Acces Unauthorized', req.originalUrl);
             }
         } catch (err: any) {
-            res.status(400).json({ error: err.message });
+            errorResponse(res, 400, 'Bad Request', err.message, req.originalUrl);
         }
     }
 
@@ -69,7 +70,7 @@ export class LogisticsController {
             const alerts = await logisticsService.checkCriticalStock();
             res.json(alerts);
         } else {
-            res.status(401).json({ error: 'Acces Unauthorized' });
+            errorResponse(res, 401, 'Unauthorized', 'Acces Unauthorized', req.originalUrl);
         }
     }
 
@@ -83,7 +84,7 @@ export class LogisticsController {
             const alerts = await logisticsService.getReplenishments();
             res.json(alerts);
         } else {
-            res.status(401).json({ error: 'Acces Unauthorized' });
+            errorResponse(res, 401, 'Unauthorized', 'Acces Unauthorized', req.originalUrl);
         }
     }
 }

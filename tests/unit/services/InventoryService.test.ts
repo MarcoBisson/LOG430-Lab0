@@ -25,28 +25,31 @@ describe('InventoryService', () => {
 
             const result = await inventoryService.getCentralStock();
 
-            expect(result).toEqual(mockCentralStock);
-            expect(result).toHaveLength(3);
+            expect(result.products).toEqual(mockCentralStock.map(s => ({
+                productId: s.productId,
+                stock: s.stock,
+                name: expect.any(String),
+            })));
+            expect(result.products).toHaveLength(3);
         });
 
         it('should return empty array when no central stock exists', async () => {
             const result = await inventoryService.getCentralStock();
-
-            expect(result).toEqual([]);
-            expect(result).toHaveLength(0);
+            expect(result.products).toEqual([]);
+            expect(result.products).toHaveLength(0);
         });
 
         it('should handle products with zero stock', async () => {
             const mockCentralStock = [
-                { productId: 1, stock: 0 },
-                { productId: 2, stock: 100 },
+                { productId: 1, stock: 0, name: 'Produit 1' },
+                { productId: 2, stock: 100, name: 'Produit 2' },
             ];
             mockLogisticsRepository.seed(mockCentralStock);
 
             const result = await inventoryService.getCentralStock();
 
-            expect(result).toEqual(mockCentralStock);
-            expect(result[0].stock).toBe(0);
+            expect(result.products).toEqual(mockCentralStock);
+            expect(result.products[0].stock).toBe(0);
         });
 
         it('should maintain product ID and stock integrity', async () => {
@@ -57,8 +60,8 @@ describe('InventoryService', () => {
 
             const result = await inventoryService.getCentralStock();
 
-            expect(result[0].productId).toBe(12345);
-            expect(result[0].stock).toBe(999);
+            expect(result.products[0].productId).toBe(12345);
+            expect(result.products[0].stock).toBe(999);
         });
     });
 
@@ -164,11 +167,11 @@ describe('InventoryService', () => {
                 inventoryService.getStoreStock(2),
             ]);
 
-            expect(centralResult).toHaveLength(2);
+            expect(centralResult.products).toHaveLength(2);
             expect(store1Result).toHaveLength(2);
             expect(store2Result).toHaveLength(1);
             
-            expect(centralResult.find(s => s.productId === 101)?.stock).toBe(1000);
+            expect(centralResult.products.find(s => s.productId === 101)?.stock).toBe(1000);
             expect(store1Result.find(s => s.productId === 101)?.quantity).toBe(50);
             expect(store2Result.find(s => s.productId === 101)?.quantity).toBe(75);
         });
@@ -197,7 +200,7 @@ describe('InventoryService', () => {
 
             const result = await inventoryService.getCentralStock();
 
-            expect(result[0].stock).toBe(Number.MAX_SAFE_INTEGER - 1);
+            expect(result.products[0].stock).toBe(Number.MAX_SAFE_INTEGER - 1);
         });
 
         it('should handle many products in central stock', async () => {
@@ -209,9 +212,9 @@ describe('InventoryService', () => {
 
             const result = await inventoryService.getCentralStock();
 
-            expect(result).toHaveLength(1000);
-            expect(result[0].productId).toBe(1);
-            expect(result[999].productId).toBe(1000);
+            expect(result.products).toHaveLength(1000);
+            expect(result.products[0].productId).toBe(1);
+            expect(result.products[999].productId).toBe(1000);
         });
 
         it('should handle many products in store stock', async () => {

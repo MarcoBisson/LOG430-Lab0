@@ -8,6 +8,8 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,8 +37,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           registry: docker.io
-
-      - name: Build and push Docker image
+        
+      - name: Build images with Docker Compose
         run: |
-          docker build -t docker.io/${{ secrets.DOCKER_USERNAME }}/log430-lab1:latest .
-          docker push docker.io/${{ secrets.DOCKER_USERNAME }}/log430-lab1:latest
+          docker compose build frontend backend
+
+      - name: Push images to Docker Hub
+        run: |
+          docker push docker.io/${{ secrets.DOCKER_USERNAME }}/log430-frontend:latest
+          docker push docker.io/${{ secrets.DOCKER_USERNAME }}/log430-backend:latest

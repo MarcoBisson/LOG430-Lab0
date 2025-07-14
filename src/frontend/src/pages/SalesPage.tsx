@@ -16,7 +16,10 @@ export default function SalesPage() {
     const [loadSaleId, setLoadSaleId] = useState<number>(0);
     const [products, setProducts] = useState<ProductDTO[]>([]);
 
-    const fetchAll = async () => getProductsByStoreId(storeId).then(setProducts);
+    const fetchAll = async () => {
+        const res = await getProductsByStoreId(storeId);
+        setProducts(res.products);
+    };
         useEffect(() => { 
             fetchAll(); 
         }, [storeId]);

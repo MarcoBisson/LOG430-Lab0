@@ -40,10 +40,10 @@ describe('InventoryController', () => {
 
     describe('central', () => {
         test('should return central stock for non-client users', async () => {
-            const mockCentralStock = [
-                { productId: 1, quantity: 100 },
-                { productId: 2, quantity: 50 },
-            ];
+            const mockCentralStock = { products: [
+                { productId: 1, stock: 100, name: 'Produit 1' },
+                { productId: 2, stock: 50, name: 'Produit 2' },
+            ], total: 2 };
             mockInventoryService.getCentralStock.mockResolvedValue(mockCentralStock);
 
             req.user = {
@@ -60,10 +60,10 @@ describe('InventoryController', () => {
         });
 
         test('should return central stock for admin users', async () => {
-            const mockCentralStock = [
-                { productId: 1, quantity: 100 },
-                { productId: 2, quantity: 50 },
-            ];
+            const mockCentralStock = { products: [
+                { productId: 1, stock: 100, name: 'Produit 1' },
+                { productId: 2, stock: 50, name: 'Produit 2' },
+            ], total: 2 };
             mockInventoryService.getCentralStock.mockResolvedValue(mockCentralStock);
 
             req.user = {
@@ -91,7 +91,12 @@ describe('InventoryController', () => {
 
             expect(mockInventoryService.getCentralStock).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 401,
+                error: 'Unauthorized',
+                message: 'Acces Unauthorized',
+                path: undefined,
+            }));
         });
 
         test('should return 401 when no user is provided', async () => {
@@ -101,7 +106,12 @@ describe('InventoryController', () => {
 
             expect(mockInventoryService.getCentralStock).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 401,
+                error: 'Unauthorized',
+                message: 'Acces Unauthorized',
+                path: undefined,
+            }));
         });
     });
 
@@ -157,7 +167,12 @@ describe('InventoryController', () => {
             expect(mockUserRepository.getUserAccess).toHaveBeenCalledWith(1);
             expect(mockInventoryService.getStoreStock).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 401,
+                error: 'Unauthorized',
+                message: 'Acces Unauthorized',
+                path: undefined,
+            }));
         });
 
         test('should return 403 when no user is provided', async () => {
@@ -169,7 +184,12 @@ describe('InventoryController', () => {
             expect(mockUserRepository.getUserAccess).not.toHaveBeenCalled();
             expect(mockInventoryService.getStoreStock).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(403);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Invalid token' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 403,
+                error: 'Forbidden',
+                message: 'Invalid token',
+                path: undefined,
+            }));
         });
 
         test('should handle numeric store ID conversion', async () => {
@@ -214,7 +234,56 @@ describe('InventoryController', () => {
             expect(mockUserRepository.getUserAccess).toHaveBeenCalledWith(1);
             expect(mockInventoryService.getStoreStock).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 401,
+                error: 'Unauthorized',
+                message: 'Acces Unauthorized',
+                path: undefined,
+            }));
         });
     });
+    test('should return 401 if user has no access to store', async () => {
+        const req: any = {
+            params: { storeId: '1' },
+            user: { id: 1 },
+        };
+        const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+        mockUserRepository.getUserAccess.mockResolvedValue([]);
+        (InventoryController as any).userRepository = mockUserRepository;
+        await InventoryController.store(req, res);
+        expect(res.status).toHaveBeenCalledWith(401);
+    });
+
+    test('should return 403 if no user', async () => {
+        const req: any = { params: { storeId: '1' }, user: undefined };
+        const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+        await InventoryController.store(req, res);
+        expect(res.status).toHaveBeenCalledWith(403);
+    });
+
+    test('should return result with page and limit if provided', async () => {
+        const mockCentralStock = { products: [
+            { productId: 1, stock: 100, name: 'Produit 1' },
+            { productId: 2, stock: 50, name: 'Produit 2' },
+        ], total: 2 };
+        mockInventoryService.getCentralStock.mockResolvedValue(mockCentralStock);
+
+        req.query = {
+            page: '1',
+            limit: '10',
+        };
+        req.user = {
+            id: 1,
+            username: 'staff_user',
+            password: 'password123',
+            role: UserRole.STAFF,
+        };
+
+        await InventoryController.central(req as AuthenticatedRequest, res as Response);
+
+        expect(mockInventoryService.getCentralStock).toHaveBeenCalledWith(1, 10);
+        expect(res.json).toHaveBeenCalledWith(mockCentralStock);
+    });
+
+
 });

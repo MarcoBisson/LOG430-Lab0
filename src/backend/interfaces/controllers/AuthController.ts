@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { AuthService } from '../../application/services/AuthService';
 import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
+import { errorResponse } from '../../utils/errorResponse';
 
 const userRepository = new PrismaUserRepository();
 
@@ -11,7 +12,7 @@ export class AuthController {
     const user = await userRepository.getUser(username);
 
     if (!user || !(await AuthService.comparePassword(password, user.password))) {
-        res.status(401).json({ error: 'Invalid credentials' });
+        errorResponse(res, 401, 'Unauthorized', 'Invalid credentials', req.originalUrl);
     } else {
         const token = AuthService.generateToken({ id: user.id, role: user.role });
         res.json({ 

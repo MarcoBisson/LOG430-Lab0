@@ -244,7 +244,7 @@ productRoutes.delete('/:id', authenticateJWT, ProductController.delete);
  * @openapi
  * /api/products/store/{id}:
  *   get:
- *     summary: Récupère les produits d’un magasin
+ *     summary: Récupère les produits d’un magasin (paginé)
  *     tags:
  *       - Produits
  *     security:
@@ -255,15 +255,32 @@ productRoutes.delete('/:id', authenticateJWT, ProductController.delete);
  *         required: true
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Page de pagination (optionnel)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Nombre d'éléments par page (optionnel)
  *     responses:
  *       200:
  *         description: Produits du magasin
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Product'
+ *               type: object
+ *               properties:
+ *                 products:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Product'
+ *                 total:
+ *                   type: integer
  *       401:
  *         description: Accès non autorisé
  *         content:

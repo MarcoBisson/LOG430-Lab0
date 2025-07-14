@@ -28,7 +28,7 @@ export class PrismaSaleRepository implements ISaleRepository {
         await prisma.sale.delete({ where: { id } });
     }
 
-    async groupSalesByStore(userId:number, startDate?: Date, endDate?: Date): Promise<{ storeId: number; totalQuantity: number }[]> {
+    async groupSalesByStore(userId: number, startDate?: Date, endDate?: Date, limit?: number): Promise<{ storeId: number; totalQuantity: number }[]> {
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: { access: true },
@@ -36,35 +36,41 @@ export class PrismaSaleRepository implements ISaleRepository {
 
         if (!user?.access)
             return [];
-        
-        const accessibleStoreIds = user.access.map(store => store.id);
 
-        const sales = await prisma.sale.findMany({
+
+        // 1. Récupérer tous les stores accessibles de type 'SALES' uniquement
+        const stores = await prisma.store.findMany({
             where: {
-                storeId:{
-                    in: accessibleStoreIds,
-                },
-                date: {
-                    gte: startDate,
-                    lte: endDate,
-                },
+                id: { in: user.access.map(store => store.id) },
+                type: 'SALES',
             },
-            select: {
-                storeId: true,
-                saleItems: { select: { quantity: true } },
-            },
+            select: { id: true },
         });
 
-        const map: Record<number, number> = {};
-        for (const sale of sales) {
-            const sum: number = sale.saleItems.reduce((acc: number, si: { quantity: number }) => acc + si.quantity, 0);
-            map[sale.storeId] = (map[sale.storeId] || 0) + sum;
-        }
+        // 2. Pour chaque store, sommer les quantités vendues (via aggregate sur saleItem)
+        const results = await Promise.all(
+            stores.map(async (store) => {
+                const agg = await prisma.saleItem.aggregate({
+                    where: {
+                        sale: {
+                            storeId: store.id,
+                            date: { gte: startDate, lte: endDate },
+                        },
+                    },
+                    _sum: { quantity: true },
+                });
+                return { storeId: store.id, totalQuantity: agg._sum.quantity || 0 };
+            }),
+        );
 
-        return Object.entries(map).map(([storeId, totalQuantity]) => ({
-            storeId: Number(storeId),
-            totalQuantity,
-        }));
+        // 3. Trier par totalQuantity décroissant
+        results.sort((a, b) => b.totalQuantity - a.totalQuantity);
+
+        // 4. Appliquer la limite côté TypeScript si précisé
+        if (limit && limit > 0) {
+            return results.slice(0, limit);
+        }
+        return results;
     }
 
     async getTopProducts(userId: number,limit: number,startDate?: Date, endDate?: Date): Promise<{ productId: number; totalQuantity: number }[]> {

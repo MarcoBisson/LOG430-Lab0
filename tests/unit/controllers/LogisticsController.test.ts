@@ -89,7 +89,12 @@ describe('LogisticsController', () => {
             expect(mockUserRepository.getUserAccess).toHaveBeenCalledWith(1);
             expect(mockLogisticsService.requestReplenishment).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 401,
+                error: 'Unauthorized',
+                message: 'Acces Unauthorized',
+                path: undefined,
+            }));
         });
 
         test('should return 403 when no user is provided', async () => {
@@ -101,7 +106,12 @@ describe('LogisticsController', () => {
             expect(mockUserRepository.getUserAccess).not.toHaveBeenCalled();
             expect(mockLogisticsService.requestReplenishment).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(403);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Invalid token' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 403,
+                error: 'Forbidden',
+                message: 'Invalid token',
+                path: undefined,
+            }));
         });
 
         test('should handle service errors', async () => {
@@ -122,7 +132,12 @@ describe('LogisticsController', () => {
             await LogisticsController.request(req as AuthenticatedRequest, res as Response);
 
             expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 400,
+                error: 'Bad Request',
+                message: errorMessage,
+                path: undefined,
+            }));
         });
     });
 
@@ -178,7 +193,12 @@ describe('LogisticsController', () => {
 
             expect(mockLogisticsService.approveReplenishment).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 401,
+                error: 'Unauthorized',
+                message: 'Acces Unauthorized',
+                path: undefined,
+            }));
         });
 
         test('should return 401 when no user is provided', async () => {
@@ -189,7 +209,12 @@ describe('LogisticsController', () => {
 
             expect(mockLogisticsService.approveReplenishment).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 401,
+                error: 'Unauthorized',
+                message: 'Acces Unauthorized',
+                path: undefined,
+            }));
         });
 
         test('should handle service errors in approve', async () => {
@@ -208,7 +233,12 @@ describe('LogisticsController', () => {
             await LogisticsController.approve(req as AuthenticatedRequest, res as Response);
 
             expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 400,
+                error: 'Bad Request',
+                message: errorMessage,
+                path: undefined,
+            }));
         });
     });
 
@@ -266,7 +296,12 @@ describe('LogisticsController', () => {
 
             expect(mockLogisticsService.checkCriticalStock).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 401,
+                error: 'Unauthorized',
+                message: 'Acces Unauthorized',
+                path: undefined,
+            }));
         });
 
         test('should return 401 when no user is provided', async () => {
@@ -276,7 +311,12 @@ describe('LogisticsController', () => {
 
             expect(mockLogisticsService.checkCriticalStock).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 401,
+                error: 'Unauthorized',
+                message: 'Acces Unauthorized',
+                path: undefined,
+            }));
         });
     });
 
@@ -334,7 +374,12 @@ describe('LogisticsController', () => {
 
             expect(mockLogisticsService.getReplenishments).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 401,
+                error: 'Unauthorized',
+                message: 'Acces Unauthorized',
+                path: undefined,
+            }));
         });
 
         test('should return 401 when no user is provided', async () => {
@@ -344,7 +389,12 @@ describe('LogisticsController', () => {
 
             expect(mockLogisticsService.getReplenishments).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 401,
+                error: 'Unauthorized',
+                message: 'Acces Unauthorized',
+                path: undefined,
+            }));
         });
     });
 });

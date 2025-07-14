@@ -27,7 +27,7 @@ export interface ISaleRepository {
      * Récupère toutes les ventes d'un magasin.
      * @returns Une liste des ventes groupées par magasin, avec la quantité totale vendue pour chaque magasin.
      */
-    groupSalesByStore(userId:number, startDate?: Date, endDate?: Date): Promise<{ storeId: number; totalQuantity: number }[]>;
+    groupSalesByStore(userId: number, startDate?: Date, endDate?: Date, limit?: number): Promise<{ storeId: number; totalQuantity: number }[]>;
 
     /**
      * Récupère les produits les plus vendus.

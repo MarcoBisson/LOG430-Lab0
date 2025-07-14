@@ -5,6 +5,7 @@ import { PrismaLogisticsRepository } from '../../infrastructure/prisma/PrismaLog
 import type { AuthenticatedRequest } from '../middlewares/authentificateJWT';
 import { UserRole } from '@prisma/client';
 import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
+import { errorResponse } from '../../utils/errorResponse';
 
 const logisticsRepository = new PrismaLogisticsRepository();
 const storeRepository = new PrismaStoreRepository();
@@ -19,10 +20,13 @@ export class InventoryController {
      */
     static async central(req: AuthenticatedRequest, res: Response) {
         if (req.user && req.user.role !== UserRole.CLIENT) {
-            const central = await inventoryService.getCentralStock();
-            res.json(central);
+            const query = req.query || {};
+            const page = query.page ? parseInt(query.page as string) : undefined;
+            const limit = query.limit ? parseInt(query.limit as string) : undefined;
+            const { products, total } = await inventoryService.getCentralStock(page, limit);
+            res.json({ products, total });
         } else {
-            res.status(401).json({ error: 'Acces Unauthorized' });
+            errorResponse(res, 401, 'Unauthorized', 'Acces Unauthorized', req.originalUrl);
         }
     }
 
@@ -41,10 +45,10 @@ export class InventoryController {
                 const storeStock = await inventoryService.getStoreStock(storeId);
                 res.json(storeStock);
             } else {
-                res.status(401).json({ error: 'Acces Unauthorized' });
+                errorResponse(res, 401, 'Unauthorized', 'Acces Unauthorized', req.originalUrl);
             }
         } else {
-            res.status(403).json({ error: 'Invalid token' });
+            errorResponse(res, 403, 'Forbidden', 'Invalid token', req.originalUrl);
         }
     }
 }

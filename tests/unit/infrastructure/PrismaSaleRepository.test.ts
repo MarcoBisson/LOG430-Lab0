@@ -8,9 +8,13 @@ const mockPrismaClient = {
     saleItem: {
         deleteMany: jest.fn(),
         findMany: jest.fn(),
+        aggregate: jest.fn(),
     },
     user: {
         findUnique: jest.fn(),
+    },
+    store: {
+        findMany: jest.fn(),
     },
 };
 
@@ -140,31 +144,20 @@ describe('PrismaSaleRepository', () => {
             ],
         };
 
-        const mockSales = [
-            {
-                storeId: 1,
-                saleItems: [
-                    { quantity: 5 },
-                    { quantity: 3 },
-                ],
-            },
-            {
-                storeId: 1,
-                saleItems: [
-                    { quantity: 2 },
-                ],
-            },
-            {
-                storeId: 2,
-                saleItems: [
-                    { quantity: 4 },
-                    { quantity: 6 },
-                ],
-            },
-        ];
-
+        // Le repository du projet utilise store.findMany pour récupérer les stores accessibles
         mockPrismaClient.user.findUnique.mockResolvedValue(mockUser);
-        mockPrismaClient.sale.findMany.mockResolvedValue(mockSales);
+        mockPrismaClient.store.findMany.mockResolvedValue([
+            { id: 1 },
+            { id: 2 },
+        ]);
+        // Simule l'aggregate sur saleItem pour chaque store
+        mockPrismaClient.saleItem = {
+            deleteMany: jest.fn(),
+            findMany: jest.fn(),
+            aggregate: jest.fn()
+                .mockResolvedValueOnce({ _sum: { quantity: 10 } })
+                .mockResolvedValueOnce({ _sum: { quantity: 10 } }),
+        };
 
         const startDate = new Date('2024-01-01');
         const endDate = new Date('2024-12-31');
@@ -176,22 +169,15 @@ describe('PrismaSaleRepository', () => {
             select: { access: true },
         });
 
-        expect(mockPrismaClient.sale.findMany).toHaveBeenCalledWith({
+        expect(mockPrismaClient.store.findMany).toHaveBeenCalledWith({
             where: {
-                storeId: {
-                    in: [1, 2],
-                },
-                date: {
-                    gte: startDate,
-                    lte: endDate,
-                },
+                id: { in: [1, 2] },
+                type: 'SALES',
             },
-            select: {
-                storeId: true,
-                saleItems: { select: { quantity: true } },
-            },
+            select: { id: true },
         });
 
+        expect(mockPrismaClient.saleItem.aggregate).toHaveBeenCalledTimes(2);
         expect(result).toEqual([
             { storeId: 1, totalQuantity: 10 },
             { storeId: 2, totalQuantity: 10 },
@@ -204,7 +190,7 @@ describe('PrismaSaleRepository', () => {
         };
 
         mockPrismaClient.user.findUnique.mockResolvedValue(mockUser);
-        mockPrismaClient.sale.findMany.mockResolvedValue([]);
+        mockPrismaClient.store.findMany.mockResolvedValue([]);
 
         const result = await prismaSaleRepository.groupSalesByStore(1);
 
@@ -212,21 +198,12 @@ describe('PrismaSaleRepository', () => {
             where: { id: 1 },
             select: { access: true },
         });
-        
-        expect(mockPrismaClient.sale.findMany).toHaveBeenCalledWith({
+        expect(mockPrismaClient.store.findMany).toHaveBeenCalledWith({
             where: {
-                storeId: {
-                    in: [],
-                },
-                date: {
-                    gte: undefined,
-                    lte: undefined,
-                },
+                id: { in: [] },
+                type: 'SALES',
             },
-            select: {
-                storeId: true,
-                saleItems: { select: { quantity: true } },
-            },
+            select: { id: true },
         });
         expect(result).toEqual([]);
     });
@@ -348,34 +325,28 @@ describe('PrismaSaleRepository', () => {
             access: [{ id: 1, name: 'Store 1' }],
         };
 
-        const mockSales = [
-            {
-                storeId: 1,
-                saleItems: [{ quantity: 7 }],
-            },
-        ];
-
         mockPrismaClient.user.findUnique.mockResolvedValue(mockUser);
-        mockPrismaClient.sale.findMany.mockResolvedValue(mockSales);
+        mockPrismaClient.store.findMany.mockResolvedValue([
+            { id: 1 },
+        ]);
+        mockPrismaClient.saleItem.aggregate = jest.fn().mockResolvedValue({ _sum: { quantity: 7 } });
 
         const result = await prismaSaleRepository.groupSalesByStore(1);
 
-        expect(mockPrismaClient.sale.findMany).toHaveBeenCalledWith({
-            where: {
-                storeId: {
-                    in: [1],
-                },
-                date: {
-                    gte: undefined,
-                    lte: undefined,
-                },
-            },
-            select: {
-                storeId: true,
-                saleItems: { select: { quantity: true } },
-            },
+        expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
+            where: { id: 1 },
+            select: { access: true },
         });
 
+        expect(mockPrismaClient.store.findMany).toHaveBeenCalledWith({
+            where: {
+                id: { in: [1] },
+                type: 'SALES',
+            },
+            select: { id: true },
+        });
+
+        expect(mockPrismaClient.saleItem.aggregate).toHaveBeenCalledTimes(1);
         expect(result).toEqual([
             { storeId: 1, totalQuantity: 7 },
         ]);
@@ -418,5 +389,57 @@ describe('PrismaSaleRepository', () => {
             { productId: 1, totalQuantity: 5 },
             { productId: 2, totalQuantity: 3 },
         ]);
+    });
+
+    test('should return [] if user.access is falsy', async () => {
+        mockPrismaClient.user.findUnique.mockResolvedValue({});
+        const result = await prismaSaleRepository.groupSalesByStore(1);
+        expect(result).toEqual([]);
+    });
+
+    test('should slice results if limit is provided', async () => {
+        const mockUser = {
+            access: [{ id: 1, name: 'Store 1' }],
+        };
+
+        mockPrismaClient.user.findUnique.mockResolvedValue(mockUser);
+        mockPrismaClient.store.findMany.mockResolvedValue([
+            { id: 1 },
+        ]);
+        mockPrismaClient.saleItem.aggregate = jest.fn().mockResolvedValue({ _sum: { quantity: 10 } });
+
+        const result = await prismaSaleRepository.groupSalesByStore(1, undefined, undefined, 1);
+
+        expect(result).toEqual([{ storeId: 1, totalQuantity: 10 }]);
+    });
+
+    test('should stores with no sales return empty array', async () => {
+        const mockUser = {
+            access: [],
+        };
+
+        mockPrismaClient.user.findUnique.mockResolvedValue(mockUser);
+        mockPrismaClient.store.findMany.mockResolvedValue([]);
+        mockPrismaClient.saleItem.aggregate = jest.fn().mockResolvedValue({ _sum: { quantity: 0 } });
+
+        const result = await prismaSaleRepository.groupSalesByStore(1);
+
+        expect(result).toEqual([]);
+    });
+
+    test('should aggregate saleItems return undefined _sum when no items', async () => {
+        const mockUser = {
+            access: [{ id: 1, name: 'Store 1' }],
+        };
+
+        mockPrismaClient.user.findUnique.mockResolvedValue(mockUser);
+        mockPrismaClient.store.findMany.mockResolvedValue([
+            { id: 1 },
+        ]);
+        mockPrismaClient.saleItem.aggregate = jest.fn().mockResolvedValue({ _sum: { quantity: undefined } });
+
+        const result = await prismaSaleRepository.groupSalesByStore(1);
+
+        expect(result).toEqual([{ storeId: 1, totalQuantity: 0 }]);
     });
 });

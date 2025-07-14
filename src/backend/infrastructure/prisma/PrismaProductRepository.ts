@@ -89,38 +89,56 @@ export class PrismaProductRepository implements IProductRepository {
         return prisma.product.delete({ where: { id } });
     }
 
-    async findProductsByStore(storeId: number): Promise<ProductStock[]> {
-        const products = await prisma.product.findMany({
-            where:{
-                storeStocks:{
-                    some: {
-                        storeId: storeId,
+    async findProductsByStore(storeId: number, limit?: number, page?: number): Promise<{ products: ProductStock[]; total: number }> {
+        let take: number | undefined = undefined;
+        let skip: number | undefined = undefined;
+        if (typeof limit === 'number' && typeof page === 'number') {
+            take = limit;
+            skip = page > 0 ? (page - 1) * take : 0;
+        }
+        const [products, total] = await Promise.all([
+            prisma.product.findMany({
+                where: {
+                    storeStocks: {
+                        some: {
+                            storeId: storeId,
+                        },
                     },
                 },
-            },
-            select: {
-                id: true,
-                name: true,
-                price: true,
-                description: true,
-                category: true,
-                storeStocks: {
-                    where: {
-                        storeId,
-                    },
-                    select: {
-                        quantity: true,
+                select: {
+                    id: true,
+                    name: true,
+                    price: true,
+                    description: true,
+                    category: true,
+                    storeStocks: {
+                        where: { storeId },
+                        select: { quantity: true },
                     },
                 },
-            },
-        });
-        return products.map(p => ({
-            id: p.id,
-            name: p.name,
-            price: p.price,
-            description: p.description,
-            category: p.category,
-            stock: p.storeStocks[0]?.quantity ?? 0,
-        }));
+                ...(typeof skip === 'number' ? { skip } : {}),
+                ...(typeof take === 'number' ? { take } : {}),
+            }),
+            prisma.product.count({
+                where: {
+                    storeStocks: {
+                        some: {
+                            storeId: storeId,
+                        },
+                    },
+                },
+            }),
+        ]);
+        return {
+            products: products.map(p => ({
+                id: p.id,
+                name: p.name,
+                price: p.price,
+                description: p.description,
+                category: p.category,
+                stock: p.storeStocks[0]?.quantity ?? 0,
+            })),
+            total,
+        };
     }
 }

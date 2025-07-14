@@ -57,7 +57,7 @@ describe('ReturnController', () => {
             expect(res.end).toHaveBeenCalledTimes(1);
         });
 
-        test('should process return when sale does not exist but continues with saleId', async () => {
+        test('should process return when sale does not exist and not continues with saleId', async () => {
             req.body = { saleId: 999 };
 
             mockSaleRepository.getSaleById.mockResolvedValue(null);

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 
 type EditProductModalProps = {
-  product: { id: number; name: string; price: number; stock: number }
-  onSave: (data: { name: string; price: number; stock: number }) => void
+  product: { id: number; name: string; price: number; stock: number; description?: string; category?: string }
+  onSave: (data: { name: string; price: number; stock: number; description?: string; category?: string }) => void
   onClose: () => void
 }
 
@@ -10,11 +10,15 @@ export function EditProductModal({ product, onSave, onClose }: EditProductModalP
   const [name, setName] = useState(product.name);
   const [price, setPrice] = useState(product.price);
   const [stock, setStock] = useState(product.stock);
+  const [description, setDescription] = useState(product.description ?? '');
+  const [category, setCategory] = useState(product.category ?? '');
 
   useEffect(() => {
     setName(product.name);
     setPrice(product.price);
     setStock(product.stock);
+    setDescription(product.description ?? '');
+    setCategory(product.category ?? '');
   }, [product]);
 
   return (
@@ -30,7 +34,11 @@ export function EditProductModal({ product, onSave, onClose }: EditProductModalP
           type="number"
           step="0.01"
           value={price}
-          onChange={(e) => setPrice(parseFloat(e.target.value))}
+          onChange={(e) => {
+            // Limite à 2 décimales
+            const val = parseFloat(e.target.value);
+            setPrice(Number.isNaN(val) ? 0 : Math.floor(val * 100) / 100);
+          }}
         />
 
         <label>Stock</label>
@@ -40,8 +48,20 @@ export function EditProductModal({ product, onSave, onClose }: EditProductModalP
           onChange={(e) => setStock(parseInt(e.target.value))}
         />
 
+        <label>Description</label>
+        <input
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+
+        <label>Catégorie</label>
+        <input
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
+
         <div style={styles.actions}>
-          <button onClick={() => onSave({ name, price, stock })}>💾 Enregistrer</button>
+          <button onClick={() => onSave({ name, price, stock, description, category })}>💾 Enregistrer</button>
           <button onClick={onClose}>Annuler</button>
         </div>
       </div>

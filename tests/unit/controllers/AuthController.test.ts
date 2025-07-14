@@ -56,6 +56,12 @@ describe('AuthController login', () => {
         await AuthController.login(mockRequest as Request, mockResponse as Response);
 
         expect(mockResponse.status).toHaveBeenCalledWith(401);
-        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Invalid credentials' });
+        expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+            status: 401,
+            error: 'Unauthorized',
+            message: 'Invalid credentials',
+            path: undefined,
+            timestamp: expect.any(String),
+        }));
     });
 });

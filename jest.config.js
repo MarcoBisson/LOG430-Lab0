@@ -7,7 +7,11 @@ module.exports = {
         "!src/backend/**/*.d.ts",
         "!src/backend/server.ts",
         "!src/backend/generate-swagger.ts",
-        "!src/backend/swagger.ts"
+        "!src/backend/swagger.ts",
+        "!src/backend/interfaces/routes/**",
+        "!src/backend/utils/logger.ts",
+        "!src/backend/metrics.ts",
+        "!src/tests/scripts/**",
     ],
     coverageDirectory: "coverage",
     coverageReporters: ["text", "lcov", "html"],
@@ -15,5 +19,5 @@ module.exports = {
     modulePathIgnorePatterns: ["<rootDir>/dist/"],
     clearMocks: true,
     resetMocks: true,
-    restoreMocks: true
+    restoreMocks: true,
 };

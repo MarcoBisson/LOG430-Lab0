@@ -87,7 +87,12 @@ describe('ProductController', () => {
 
         expect(mockProductService.getProductById).toHaveBeenCalledWith(999);
         expect(mockResponse.status).toHaveBeenCalledWith(404);
-        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Not found' });
+        expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+            status: 404,
+            error: 'Not Found',
+            message: 'Produit non trouvé',
+            path: undefined,
+        }));
     });
 
     test('should get products by name successfully', async () => {
@@ -116,7 +121,12 @@ describe('ProductController', () => {
 
         expect(mockProductService.getProductsByName).toHaveBeenCalledWith('NonExistent');
         expect(mockResponse.status).toHaveBeenCalledWith(404);
-        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Not found' });
+        expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+            status: 404,
+            error: 'Not Found',
+            message: 'Produit non trouvé',
+            path: undefined,
+        }));
     });
 
     test('should get products by category successfully', async () => {
@@ -166,7 +176,12 @@ describe('ProductController', () => {
 
         expect(mockProductService.createProduct).not.toHaveBeenCalled();
         expect(mockResponse.status).toHaveBeenCalledWith(401);
-        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Action Unauthorized' });
+        expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+            status: 401,
+            error: 'Unauthorized',
+            message: 'Action Unauthorized',
+            path: undefined,
+        }));
     });
 
     test('should update product when user is authorized', async () => {
@@ -197,7 +212,12 @@ describe('ProductController', () => {
 
         expect(mockProductService.updateProduct).not.toHaveBeenCalled();
         expect(mockResponse.status).toHaveBeenCalledWith(401);
-        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Action Unauthorized' });
+        expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+            status: 401,
+            error: 'Unauthorized',
+            message: 'Action Unauthorized',
+            path: undefined,
+        }));
     });
 
     test('should delete product when user is authorized', async () => {
@@ -225,10 +245,16 @@ describe('ProductController', () => {
 
         expect(mockProductService.deleteProduct).not.toHaveBeenCalled();
         expect(mockResponse.status).toHaveBeenCalledWith(401);
-        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Action Unauthorized' });
+        expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+            status: 401,
+            error: 'Unauthorized',
+            message: 'Action Unauthorized',
+            path: undefined,
+        }));
     });
 
     test('should get products by store when user has access', async () => {
+        mockRequest.query = {};
         const mockProducts = [
             { id: 1, name: 'Store Product 1', price: 19.99, stock: 10 },
             { id: 2, name: 'Store Product 2', price: 29.99, stock: 5 },
@@ -245,13 +271,13 @@ describe('ProductController', () => {
         };
 
         mockUserRepository.getUserAccess.mockResolvedValue(mockUserAccess);
-        mockProductService.getProductsByStore.mockResolvedValue(mockProducts);
+        mockProductService.getProductsByStore.mockResolvedValue({ products: mockProducts, total: 2 });
 
         await ProductController.getByStore(mockRequest as AuthenticatedRequest, mockResponse as Response);
 
         expect(mockUserRepository.getUserAccess).toHaveBeenCalledWith(1);
-        expect(mockProductService.getProductsByStore).toHaveBeenCalledWith(1);
-        expect(mockResponse.json).toHaveBeenCalledWith(mockProducts);
+        expect(mockProductService.getProductsByStore).toHaveBeenCalledWith(1, undefined, undefined);
+        expect(mockResponse.json).toHaveBeenCalledWith({ products: mockProducts, total: 2 });
     });
 
     test('should return 401 when user does not have store access', async () => {
@@ -272,7 +298,12 @@ describe('ProductController', () => {
         expect(mockUserRepository.getUserAccess).toHaveBeenCalledWith(1);
         expect(mockProductService.getProductsByStore).not.toHaveBeenCalled();
         expect(mockResponse.status).toHaveBeenCalledWith(401);
-        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Acces Unauthorized' });
+        expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+            status: 401,
+            error: 'Unauthorized',
+            message: 'Acces Unauthorized',
+            path: undefined,
+        }));
     });
 
     test('should return 403 when user is not authenticated', async () => {
@@ -286,7 +317,12 @@ describe('ProductController', () => {
         expect(mockUserRepository.getUserAccess).not.toHaveBeenCalled();
         expect(mockProductService.getProductsByStore).not.toHaveBeenCalled();
         expect(mockResponse.status).toHaveBeenCalledWith(403);
-        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Invalid token' });
+        expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+            status: 403,
+            error: 'Forbidden',
+            message: 'Invalid token',
+            path: undefined,
+        }));
     });
 
     test('should return 404 when no products found by store', async () => {
@@ -300,13 +336,78 @@ describe('ProductController', () => {
         };
 
         mockUserRepository.getUserAccess.mockResolvedValue(mockUserAccess);
-        mockProductService.getProductsByStore.mockResolvedValue(null);
+        mockProductService.getProductsByStore.mockResolvedValue({ products: [], total: 0 });
 
         await ProductController.getByStore(mockRequest as AuthenticatedRequest, mockResponse as Response);
 
         expect(mockUserRepository.getUserAccess).toHaveBeenCalledWith(1);
-        expect(mockProductService.getProductsByStore).toHaveBeenCalledWith(1);
+        expect(mockProductService.getProductsByStore).toHaveBeenCalledWith(1, undefined, undefined);
         expect(mockResponse.status).toHaveBeenCalledWith(404);
-        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Not found' });
+        expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+            status: 404,
+            error: 'Not Found',
+            message: 'Produit non trouvé',
+            path: undefined,
+        }));
+    });
+
+    test('should return 404 if getProductsByStore returns empty (access array)', async () => {
+        const req: any = {
+            params: { id: '1' },
+            user: { id: 1 },
+            query: {},
+        };
+        const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+        mockUserRepository.getUserAccess.mockResolvedValue([{ id: 1 }]);
+        mockProductService.getProductsByStore.mockResolvedValue({ products: [], total: 0 });
+        (ProductController as any).userRepository = mockUserRepository;
+        (ProductController as any).productService = mockProductService;
+        await ProductController.getByStore(req, res);
+        expect(res.status).toHaveBeenCalledWith(404);
+    });
+
+    test('should return 401 if getProductsByStore returns empty (access undefined)', async () => {
+        const req: any = {
+            params: { id: '1' },
+            user: { id: 1 },
+            query: {},
+        };
+        const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+        mockUserRepository.getUserAccess.mockResolvedValue([]);
+        mockProductService.getProductsByStore.mockResolvedValue({ products: [], total: 0 });
+        (ProductController as any).userRepository = mockUserRepository;
+        (ProductController as any).productService = mockProductService;
+        await ProductController.getByStore(req, res);
+        expect(res.status).toHaveBeenCalledWith(401);
+    });
+
+    test('should return 404 if getByCategory returns empty', async () => {
+        const req: any = {
+            params: { category: 'NonExistentCategory' },
+        };
+        const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+        mockProductService.getProductsByCategory.mockResolvedValue([]);
+        (ProductController as any).productService = mockProductService;
+        await ProductController.getByCategory(req, res);
+        expect(res.status).toHaveBeenCalledWith(404);
+    });
+
+    test('should return result if getByStore have page and limit defined', async () => {
+        const req: any = {
+            params: { id: '1' },
+            user: { id: 1, username: 'staff', password: 'hashed', role: 'STAFF' },
+            query: { page: '1', limit: '10' },
+        };
+        const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+        const mockProducts = [
+            { id: 1, name: 'Store Product 1', price: 19.99, stock: 10 },
+            { id: 2, name: 'Store Product 2', price: 29.99, stock: 5 },
+        ];
+        mockUserRepository.getUserAccess.mockResolvedValue([{ id: 1 }]);
+        mockProductService.getProductsByStore.mockResolvedValue({ products: mockProducts, total: 2 });
+        (ProductController as any).userRepository = mockUserRepository;
+        (ProductController as any).productService = mockProductService;
+        await ProductController.getByStore(req, res);
+        expect(res.json).toHaveBeenCalledWith({ products: mockProducts, total: 2 });
     });
 });

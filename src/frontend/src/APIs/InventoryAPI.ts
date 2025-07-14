@@ -1,14 +1,20 @@
-import type { StockDTO } from '../DTOs/StockDTO';
 import type { StoreStockDTO } from '../DTOs/StoreStockDTO';
 import { API_BASE } from '../config/api';
 import { authFetch } from '../utils/authFetch';
 
 /**
  * Récupère la liste des stocks centraux
- * @returns Une liste des stocks centraux
+ * @returns Une liste des stocks centraux paginée
  */
-export async function getCentralStock(): Promise<StockDTO[]> {
-    return authFetch(`${API_BASE}/stock/central`).then(r => r.json());
+export async function getCentralStock(page?: number, limit?: number): Promise<{
+    products: { productId: number; stock: number; name: string }[];
+    total: number;
+}> {
+    const params = [];
+    if (page !== undefined) params.push(`page=${page}`);
+    if (limit !== undefined) params.push(`limit=${limit}`);
+    const query = params.length ? `?${params.join('&')}` : '';
+    return authFetch(`${API_BASE}/stock/central${query}`).then(r => r.json());
 }
 
 /**

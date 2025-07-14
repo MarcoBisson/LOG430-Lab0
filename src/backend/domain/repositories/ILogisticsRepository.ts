@@ -4,10 +4,9 @@ import type { ReplenishmentRequest } from '../entities/ReplenishmentRequest';
 
 export interface ILogisticsRepository {
     /**
-     * Récupère l'état du stock central.
-     * @returns La liste des produits avec leur ID et leur stock.
+     * Retourne la liste paginée du stock central avec nom du produit.
      */
-    findAllCentralStock(): Promise<{ productId: number; stock: number }[]>;
+    findAllCentralStock(page?: number, limit?: number): Promise<{ products: { productId: number; stock: number; name: string }[]; total: number }>;
 
     /**
      * Décrémente le stock central d'un produit.

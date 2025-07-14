@@ -1,39 +1,54 @@
 import { useEffect, useState } from 'react';
-import type { StockDTO } from '../DTOs/StockDTO';
 import type { StoreStockDTO } from '../DTOs/StoreStockDTO';
 import type { UserDTO } from '../DTOs/UserDTO';
 import type { ReplenishmentRequestDTO } from '../DTOs/ReplenishmentRequestDTO';
-import { getStoreStock } from '../APIs/InventoryAPI';
 import { getCentralStock } from '../APIs/InventoryAPI';
 import { requestReplenishment, approveReplenishment, getAlerts, getReplenishments } from '../APIs/LogisticsAPI';
 import styles from './LogisticsPage.module.css';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../stores/useAuthStore';
+import { ProductTable } from '../components/ProductTable';
+import { getProductsByStoreId } from '../APIs/ProductAPI';
+import type { ProductDTO } from '../DTOs/ProductDTO';
 
 export default function LogisticsPage() {
-    const [central, setCentral] = useState<StockDTO[]>([]);
-    const [storeStock, setStoreStock] = useState<StoreStockDTO[]>([]);
+    const [central, setCentral] = useState<{ productId: number; stock: number; name: string }[]>([]);
+    const [storeStock, setStoreStock] = useState<ProductDTO[]>([]);
     const [alerts, setAlerts] = useState<StoreStockDTO[]>([]);
     const [storeId, setStoreId] = useState(1);
     const [productId, setProductId] = useState(0);
     const [quantity, setQuantity] = useState(0);
     const [requests, setRequests] = useState<ReplenishmentRequestDTO[]>([]);
     const [user] = useState<UserDTO>(useAuthStore(state => state.user) as UserDTO);
+    const [centralPage, setCentralPage] = useState(1);
+    const [storeStockPage, setStoreStockPage] = useState(1);
+    const [storeStockTotal, setStoreStockTotal] = useState(0);
+    const [centralTotal, setCentralTotal] = useState(0);
+    const itemsPerPage = 10;
 
     // au chargement : central + alertes + stock magasin + requêtes
     useEffect(() => {
-        getCentralStock().then(setCentral);
+        // Ajout de la pagination dans la requête getCentralStock
+        getCentralStock(centralPage, itemsPerPage).then(res => {
+            setCentral(res.products);
+            setCentralTotal(res.total);
+        });
         getAlerts().then(setAlerts);
-        getStoreStock(storeId).then(setStoreStock);
+        getProductsByStoreId(storeId, storeStockPage, itemsPerPage).then(res => {
+            setStoreStock(res.products);
+            setStoreStockTotal(res.total);
+        });
         getReplenishments().then(setRequests);
-    }, [storeId]);
+    }, [storeId, centralPage, storeStockPage]);
 
     const handleRequest = async () => {
         try {
             const r = await requestReplenishment(storeId, productId, quantity);
             toast.success(`Demande #${r.id} créée`);
             setAlerts(await getAlerts());
-            setStoreStock(await getStoreStock(storeId));
+            const res = await getProductsByStoreId(storeId, storeStockPage, itemsPerPage);
+            setStoreStock(res.products);
+            setStoreStockTotal(res.total);
             setRequests(await getReplenishments());
         } catch (e: any) {
             toast.error(`Erreur demande: ${e.message}`);
@@ -44,8 +59,13 @@ export default function LogisticsPage() {
         try {
             await approveReplenishment(reqId);
             toast.success(`Demande #${reqId} approuvée`);
-            setCentral(await getCentralStock());
-            setStoreStock(await getStoreStock(storeId));
+            getCentralStock(centralPage, itemsPerPage).then(res => {
+                setCentral(res.products);
+                setCentralTotal(res.total);
+            });
+            const res = await getProductsByStoreId(storeId, storeStockPage, itemsPerPage);
+            setStoreStock(res.products);
+            setStoreStockTotal(res.total);
             setAlerts(await getAlerts());
             setRequests(await getReplenishments());
         } catch (e: any) {
@@ -53,19 +73,21 @@ export default function LogisticsPage() {
         }
     };
 
+    const totalCentralPages = Math.ceil(centralTotal / itemsPerPage);
+    const totalStoreStockPages = Math.ceil(storeStockTotal / itemsPerPage);
+
     return (
         <div>
             <h1>Logistique</h1>
             <div className={styles.page}>
                 <section>
                     <h2>Stock central</h2>
-                    <ul>
-                        {central.map(c => (
-                            <li key={c.productId}>
-                                Produit #{c.productId} : {c.stock}
-                            </li>
-                        ))}
-                    </ul>
+                    <ProductTable products={central} showActions={false} />
+                    <div style={{ marginTop: '0.5rem' }}>
+                        <button disabled={centralPage === 1} onClick={() => setCentralPage(p => p - 1)}>Précédent</button>
+                        <span style={{ margin: '0 1rem' }}>Page {centralPage} / {totalCentralPages}</span>
+                        <button disabled={centralPage === totalCentralPages || totalCentralPages === 0} onClick={() => setCentralPage(p => p + 1)}>Suivant</button>
+                    </div>
                 </section>
 
                 <section>
@@ -75,16 +97,18 @@ export default function LogisticsPage() {
                         <input
                             type="number"
                             value={storeId}
-                            onChange={e => setStoreId(+e.target.value)}
+                            onChange={e => {
+                                setStoreId(+e.target.value);
+                                setStoreStockPage(1);
+                            }}
                         />
                     </div>
-                    <ul>
-                        {storeStock.map(s => (
-                            <li key={`${s.storeId}-${s.productId}`}>
-                                Produit #{s.productId} : {s.quantity}
-                            </li>
-                        ))}
-                    </ul>
+                    <ProductTable products={storeStock} showActions={false} />
+                    <div style={{ marginTop: '0.5rem' }}>
+                        <button disabled={storeStockPage === 1} onClick={() => setStoreStockPage(p => p - 1)}>Précédent</button>
+                        <span style={{ margin: '0 1rem' }}>Page {storeStockPage} / {totalStoreStockPages}</span>
+                        <button disabled={storeStockPage === totalStoreStockPages || totalStoreStockPages === 0} onClick={() => setStoreStockPage(p => p + 1)}>Suivant</button>
+                    </div>
                 </section>
                 
 
@@ -100,8 +124,8 @@ export default function LogisticsPage() {
                                 <option value="">-- Sélectionnez un produit --</option>
                                 {
                                     storeStock.map((p)=>(
-                                        <option key={p.productId} value={p.productId}>
-                                            {p.productId}
+                                        <option key={p.id} value={p.id}>
+                                            {p.name}
                                         </option>
                                     ))
                                 }

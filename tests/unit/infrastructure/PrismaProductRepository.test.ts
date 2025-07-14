@@ -5,6 +5,7 @@ const mockPrismaClient = {
         findMany: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
+        count: jest.fn(),
     },
     storeStock: {
         create: jest.fn(),
@@ -345,7 +346,7 @@ describe('PrismaProductRepository', () => {
             },
         });
 
-        expect(result).toEqual([
+        expect(result.products).toEqual([
             {
                 id: 1,
                 name: 'Store Product 1',
@@ -381,7 +382,7 @@ describe('PrismaProductRepository', () => {
 
         const result = await repository.findProductsByStore(1);
 
-        expect(result).toEqual([
+        expect(result.products).toEqual([
             {
                 id: 1,
                 name: 'Product No Stock',
@@ -391,5 +392,168 @@ describe('PrismaProductRepository', () => {
                 stock: 0,
             },
         ]);
+    });
+
+    test('should handle findProductsByStore with empty storeStocks', async () => {
+        mockPrismaClient.product.findMany.mockResolvedValue([
+            { id: 1, name: 'A', price: 1, description: '', category: '', storeStocks: [] },
+        ]);
+        const result = await repository.findProductsByStore(1);
+        expect(result.products[0].stock).toBe(0);
+    });
+
+    test('should handle findProductsByStore with storeStocks undefined', async () => {
+        mockPrismaClient.product.findMany.mockResolvedValue([
+            { id: 1, name: 'A', price: 1, description: '', category: '', storeStocks: []}],
+        );
+        const result = await repository.findProductsByStore(1, 1000,-1);
+        expect(result.products[0].stock).toBe(0);
+        expect(mockPrismaClient.product.findMany).toHaveBeenCalledWith(expect.objectContaining({
+            skip: 0,
+            take: expect.any(Number),
+        }));
+    });
+
+    test('should call count when paginated', async () => {
+        mockPrismaClient.product.findMany.mockResolvedValue([
+            { id: 1, name: 'A', price: 1, description: '', category: '', storeStocks: [{ quantity: 5 }] },
+        ]);
+        mockPrismaClient.product.count.mockResolvedValue(1);
+        const result = await repository.findProductsByStore(1, 1, 10);
+        expect(mockPrismaClient.product.count).toHaveBeenCalled();
+        expect(result.total).toBe(1);
+    });
+
+    test('should create product with undefined name and price', async () => {
+        mockPrismaClient.product.create.mockResolvedValue({
+            id: 1,
+            name: '',
+            description: 'Test product',
+            price: 0,
+            category: 'Miscellaneous',
+        });
+
+        const result = await repository.createProduct(1, {
+            name: undefined,
+            description: 'Test product',
+            price: undefined,
+            category: 'Miscellaneous',
+        });
+
+        expect(mockPrismaClient.product.create).toHaveBeenCalledWith({
+            data: {
+                name: '',
+                description: 'Test product',
+                price: 0,
+                category: 'Miscellaneous',
+            },
+        });
+        expect(result).toEqual({
+            id: 1,
+            name: '',
+            description: 'Test product',
+            price: 0,
+            category: 'Miscellaneous',
+        });
+    });
+
+    test('should update product with undefined stock', async () => {
+        const mockProduct = {
+            id: 1,
+            name: 'Test Product',
+            description: 'Test Description',
+            price: 100,
+            category: 'Electronics',
+        };
+
+        mockPrismaClient.product.update.mockResolvedValue(mockProduct);
+        mockPrismaClient.storeStock.findUnique.mockResolvedValue({
+            id: 1,
+            storeId: 1,
+            productId: 1,
+            quantity: 10,
+        });
+
+        const result = await repository.updateProduct(1, 1, {
+            name: 'Test Product',
+            description: 'Test Description',
+            price: 100,
+            stock: undefined,
+        });
+
+        expect(mockPrismaClient.product.update).toHaveBeenCalledWith({
+            where: { id: 1 },
+            data: {
+                name: 'Test Product',
+                description: 'Test Description',
+                price: 100,
+            },
+        });
+
+        expect(mockPrismaClient.storeStock.update).not.toHaveBeenCalled();
+
+        expect(mockPrismaClient.storeStock.findUnique).toHaveBeenCalledWith({
+            where: {
+                storeId_productId: {
+                    storeId: 1,
+                    productId: 1,
+                },
+            },
+        });
+
+        expect(result).toEqual({
+            ...mockProduct,
+            stock: 10, // Should return existing stock
+        });
+    });
+
+     test('should update product with undefined stock and dont find stock', async () => {
+        const mockProduct = {
+            id: 1,
+            name: 'Test Product',
+            description: 'Test Description',
+            price: 100,
+            category: 'Electronics',
+        };
+
+        mockPrismaClient.product.update.mockResolvedValue(mockProduct);
+        mockPrismaClient.storeStock.findUnique.mockResolvedValue({
+            id: 1,
+            storeId: 1,
+            productId: 1,
+            quantity: null,
+        });
+
+        const result = await repository.updateProduct(1, 1, {
+            name: 'Test Product',
+            description: 'Test Description',
+            price: 100,
+            stock: undefined,
+        });
+
+        expect(mockPrismaClient.product.update).toHaveBeenCalledWith({
+            where: { id: 1 },
+            data: {
+                name: 'Test Product',
+                description: 'Test Description',
+                price: 100,
+            },
+        });
+
+        expect(mockPrismaClient.storeStock.update).not.toHaveBeenCalled();
+
+        expect(mockPrismaClient.storeStock.findUnique).toHaveBeenCalledWith({
+            where: {
+                storeId_productId: {
+                    storeId: 1,
+                    productId: 1,
+                },
+            },
+        });
+
+        expect(result).toEqual({
+            ...mockProduct,
+            stock: 0,
+        });
     });
 });

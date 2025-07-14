@@ -63,7 +63,7 @@ export class MockProductRepository implements IProductRepository {
 
         const product = this.products[index];
         Object.assign(product, data);
-        
+
         return new ProductStock(
             product.id,
             product.name,
@@ -82,8 +82,8 @@ export class MockProductRepository implements IProductRepository {
         return new Product(product.id, product.name, product.price, product.description, product.category);
     }
 
-    async findProductsByStore(_storeId: number): Promise<ProductStock[]> {
-        return this.products.map(p => new ProductStock(
+    async findProductsByStore(_storeId: number, limit?: number, page?: number): Promise<{ products: ProductStock[]; total: number }> {
+        let products = this.products.map(p => new ProductStock(
             p.id,
             p.name,
             p.price,
@@ -91,5 +91,11 @@ export class MockProductRepository implements IProductRepository {
             p.category,
             p.stock || 0,
         ));
+        const total = products.length;
+        if (typeof limit === 'number' && typeof page === 'number') {
+            const start = (page - 1) * limit;
+            products = products.slice(start, start + limit);
+        }
+        return { products, total };
     }
 }

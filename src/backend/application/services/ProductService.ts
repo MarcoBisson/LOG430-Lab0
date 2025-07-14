@@ -1,4 +1,3 @@
-
 import { Product, ProductStock } from '../../domain/entities/Product';
 import type { IProductRepository } from '../../domain/repositories/IProductRepository';
 
@@ -103,10 +102,13 @@ export class ProductService {
      * @param storeId L'ID du store des produits à rechercher.
      * @returns Une liste de produits correspondant au store recherchée.
      */
-    async getProductsByStore(storeId: number): Promise<ProductStock[]> {
-        const products = await this.productRepo.findProductsByStore(storeId);
-        return products.map(
-            p => new ProductStock(p.id, p.name, p.price, p.description, p.category, p.stock),
-        );
+    async getProductsByStore(storeId: number, page?: number, limit?: number): Promise<{ products: ProductStock[]; total: number }> {
+        const { products, total } = await this.productRepo.findProductsByStore(storeId, limit, page);
+        return {
+            products: products.map(
+                p => new ProductStock(p.id, p.name, p.price, p.description, p.category, p.stock),
+            ),
+            total,
+        };
     }
 }

@@ -31,7 +31,7 @@ export class MockStoreRepository implements IStoreRepository {
 
     async incrementStoreStock(storeId: number, productId: number, quantity: number): Promise<StoreStock> {
         let storeStock = this.storeStocks.find(ss => ss.storeId === storeId && ss.productId === productId);
-        
+
         if (storeStock) {
             storeStock.quantity += quantity;
         } else {
@@ -43,21 +43,21 @@ export class MockStoreRepository implements IStoreRepository {
             );
             this.storeStocks.push(storeStock);
         }
-        
+
         return storeStock;
     }
 
     async decrementStoreStock(storeId: number, productId: number, quantity: number): Promise<StoreStock> {
         const storeStock = this.storeStocks.find(ss => ss.storeId === storeId && ss.productId === productId);
-        
+
         if (!storeStock) {
             throw new Error(`Stock not found for store ${storeId} and product ${productId}`);
         }
-        
+
         if (storeStock.quantity < quantity) {
             throw new Error(`Insufficient stock: available ${storeStock.quantity}, requested ${quantity}`);
         }
-        
+
         storeStock.quantity -= quantity;
         return storeStock;
     }

@@ -2,6 +2,7 @@ const mockPrismaClient = {
     storeStock: {
         findMany: jest.fn(),
         update: jest.fn(),
+        groupBy: jest.fn(),
     },
     replenishmentRequest: {
         create: jest.fn(),
@@ -11,6 +12,9 @@ const mockPrismaClient = {
     },
     store: {
         findMany: jest.fn(),
+    },
+    product: {
+        findMany: jest.fn(), // Ajoute ce mock pour éviter l'erreur sur product.findMany
     },
 };
 
@@ -31,29 +35,24 @@ describe('PrismaLogisticsRepository', () => {
     });
 
     test('should find all central stock', async () => {
-        const mockStoreStocks = [
-            { productId: 1, quantity: 100 },
-            { productId: 2, quantity: 50 },
-        ];
+        // Simule groupBy si le repo l'utilise, sinon adapte findMany pour matcher la sortie attendue
+        mockPrismaClient.storeStock.groupBy = jest.fn().mockResolvedValue([
+            { productId: 1, _sum: { quantity: 100 } },
+            { productId: 2, _sum: { quantity: 50 } },
+        ]);
+        mockPrismaClient.product.findMany = jest.fn().mockResolvedValue([
+            { id: 1, name: 'Produit 1' },
+            { id: 2, name: 'Produit 2' },
+        ]);
 
-        mockPrismaClient.storeStock.findMany.mockResolvedValue(mockStoreStocks);
-
+        // Si le repo utilise groupBy :
         const result = await repository.findAllCentralStock();
 
-        expect(mockPrismaClient.storeStock.findMany).toHaveBeenCalledWith({
-            where: {
-                store: {
-                    type: 'LOGISTICS',
-                },
-            },
-            select: {
-                productId: true,
-                quantity: true,
-            },
-        });
-        expect(result).toEqual([
-            { productId: 1, stock: 100 },
-            { productId: 2, stock: 50 },
+        expect(mockPrismaClient.storeStock.groupBy).toHaveBeenCalled();
+        expect(mockPrismaClient.product.findMany).toHaveBeenCalled();
+        expect(result.products).toEqual([
+            { productId: 1, stock: 100, name: 'Produit 1' },
+            { productId: 2, stock: 50, name: 'Produit 2' },
         ]);
     });
 
@@ -155,5 +154,111 @@ describe('PrismaLogisticsRepository', () => {
             },
         });
         expect(result).toEqual(mockStores);
+    });
+
+    test('should handle updateReplenishmentStatus', async () => {
+        mockPrismaClient.replenishmentRequest.update.mockResolvedValue({ id: 1, status: 'APPROVED' });
+        const result = await repository.updateReplenishmentStatus(1, 'APPROVED' as any);
+        expect(result).toEqual({ id: 1, status: 'APPROVED' });
+    });
+
+    test('should handle getReplenishmentRequests', async () => {
+        mockPrismaClient.replenishmentRequest.findMany.mockResolvedValue([{ id: 1 }]);
+        const result = await repository.getReplenishmentRequests();
+        expect(result).toEqual([{ id: 1 }]);
+    });
+
+    test('should handle groupBy returning empty', async () => {
+        mockPrismaClient.storeStock.groupBy.mockResolvedValue([]);
+        mockPrismaClient.product.findMany.mockResolvedValue([]);
+        const result = await repository.findAllCentralStock();
+        expect(result.products).toEqual([]);
+        expect(result.total).toBe(0);
+    });
+
+    test('should use skip, take, and orderBy when page and limit are provided', async () => {
+        // Arrange
+        mockPrismaClient.storeStock.groupBy.mockResolvedValue([
+            { productId: 1, _sum: { quantity: 10 } },
+            { productId: 2, _sum: { quantity: 20 } },
+        ]);
+        mockPrismaClient.product.findMany.mockResolvedValue([
+            { id: 1, name: 'A' },
+            { id: 2, name: 'B' },
+        ]);
+        // For total
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce([
+            { productId: 1, _sum: { quantity: 10 } },
+            { productId: 2, _sum: { quantity: 20 } },
+        ]).mockResolvedValueOnce([
+            { productId: 1, _sum: { quantity: 10 } },
+            { productId: 2, _sum: { quantity: 20 } },
+        ]);
+
+        await repository.findAllCentralStock(2, 5);
+
+        // Assert
+        expect(mockPrismaClient.storeStock.groupBy).toHaveBeenCalledWith(expect.objectContaining({
+            by: ['productId'],
+            where: { store: { type: 'LOGISTICS' } },
+            _sum: { quantity: true },
+            orderBy: { productId: 'asc' },
+            skip: 5,
+            take: 5,
+        }));
+    });
+
+    test('should skip set 0 if page < 0', async () => {
+        mockPrismaClient.storeStock.groupBy.mockResolvedValue([
+            { productId: 1, _sum: { quantity: 10 } },
+        ]);
+        mockPrismaClient.product.findMany.mockResolvedValue([
+            { id: 1, name: 'A' },
+        ]);
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce([
+            { productId: 1, _sum: { quantity: 10 } },
+        ]).mockResolvedValueOnce([
+            { productId: 1, _sum: { quantity: 10 } },
+        ]);
+        await repository.findAllCentralStock(-1, 100);
+        expect(mockPrismaClient.storeStock.groupBy).toHaveBeenCalledWith(expect.objectContaining({
+            skip: 0,
+            take: expect.any(Number),
+            orderBy: expect.anything(),
+        }));
+    });
+
+    test('should return correct product name mapping and stock 0 if quantity is null', async () => {
+        mockPrismaClient.storeStock.groupBy.mockResolvedValue([
+            { productId: 1, _sum: { quantity: null } },
+        ]);
+        mockPrismaClient.product.findMany.mockResolvedValue([
+            { id: 1, name: 'ProduitTest' },
+        ]);
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce([
+            { productId: 1, _sum: { quantity: null } },
+        ]).mockResolvedValueOnce([
+            { productId: 1, _sum: { quantity: null } },
+        ]);
+        const result = await repository.findAllCentralStock();
+        expect(result.products[0].name).toBe('ProduitTest');
+        expect(result.products[0].stock).toBe(0);
+    });
+
+    test('should return empty name if product name is null', async () => {
+        mockPrismaClient.storeStock.groupBy.mockResolvedValue([
+            { productId: 1, _sum: { quantity: null } },
+        ]);
+        mockPrismaClient.product.findMany.mockResolvedValue([
+            { id: 1, name: null },
+        ]);
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce([
+            { productId: 1, _sum: { quantity: null } },
+        ]).mockResolvedValueOnce([
+            { productId: 1, _sum: { quantity: null } },
+        ]);
+        const result = await repository.findAllCentralStock();
+        expect(result.products[0].name).toBe('');
+        expect(result.products[0].stock).toBe(0);
     });
 });

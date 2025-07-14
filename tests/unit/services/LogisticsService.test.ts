@@ -86,8 +86,9 @@ describe('LogisticsService', () => {
             expect(result.id).toBe(1);
 
             const centralStock = await mockLogisticsRepository.findAllCentralStock();
-            const product101Stock = centralStock.find(s => s.productId === 101);
-            expect(product101Stock?.stock).toBe(80);
+            const product101Stock = centralStock.products.find((s: any) => s.productId === 101);
+            expect(product101Stock).toBeDefined();
+            expect(product101Stock!.stock).toBe(80);
         });
 
         it('should throw error when request does not exist', async () => {
@@ -230,7 +231,7 @@ describe('LogisticsService', () => {
             expect(approved.status).toBe('APPROVED');
 
             const updatedCentralStock = await mockLogisticsRepository.findAllCentralStock();
-            expect(updatedCentralStock[0].stock).toBe(75);
+            expect(updatedCentralStock.products[0].stock).toBe(75);
         });
     });
 });
