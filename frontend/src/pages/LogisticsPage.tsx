@@ -26,9 +26,7 @@ export default function LogisticsPage() {
     const [centralTotal, setCentralTotal] = useState(0);
     const itemsPerPage = 10;
 
-    // au chargement : central + alertes + stock magasin + requêtes
     useEffect(() => {
-        // Ajout de la pagination dans la requête getCentralStock
         getCentralStock(centralPage, itemsPerPage).then(res => {
             setCentral(res.products);
             setCentralTotal(res.total);

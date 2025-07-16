@@ -15,7 +15,7 @@ jest.mock('../../../src/backend/infrastructure/prisma/PrismaClient', () => ({
     prisma: mockPrismaClient,
 }));
 
-import { PrismaUserRepository } from '../../../src/backend/infrastructure/prisma/PrismaUserRepository';
+import { PrismaUserRepository } from '../../../services/user-service/src/repositories/PrismaUserRepository';
 
 describe('PrismaUserRepository', () => {
     let repository: PrismaUserRepository;

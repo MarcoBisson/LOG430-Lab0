@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { AuthService } from '../../application/services/AuthService';
+import { AuthService } from '../services/AuthService';
 import type { User } from '@prisma/client';
 import logger from '../../utils/logger';
 

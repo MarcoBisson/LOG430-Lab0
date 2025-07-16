@@ -4,7 +4,7 @@ import { PrismaStoreRepository } from '../../infrastructure/prisma/PrismaStoreRe
 import { PrismaLogisticsRepository } from '../../infrastructure/prisma/PrismaLogisticsRepository';
 import type { AuthenticatedRequest } from '../middlewares/authentificateJWT';
 import { UserRole } from '@prisma/client';
-import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
+import { PrismaUserRepository } from '../../../../services/user-service/src/repositories/PrismaUserRepository';
 import { errorResponse } from '../../utils/errorResponse';
 import { createControllerLogger } from '../../utils/logger';
 

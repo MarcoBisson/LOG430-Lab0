@@ -1,4 +1,4 @@
-import { User } from '../../../src/backend/domain/entities/User';
+import { User } from '../../../services/user-service/src/entities/User';
 import { Store } from '../../../src/backend/domain/entities/Store';
 import type { StoreType } from '@prisma/client';
 

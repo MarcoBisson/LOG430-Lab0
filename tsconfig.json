@@ -13,7 +13,7 @@
     "src/**/*",
     "tests/**/*",
     "prisma/seed.ts"
-  ],
+, "frontend", "services/user-service/src/repositories/PrismaUserRepository.ts", "services/user-service/src/services/AuthService.ts", "services/user-service/src/entities/User.ts"  ],
   "exclude": [
     "node_modules"
   ]

@@ -5,16 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build:backend": "tsc",
-    "build:frontend": "vite build",
-    "build": "npm run build:backend && npm run build:frontend",
     "start:backend": "ts-node src/backend/server.ts",
     "dev:backend": "ts-node-dev --respawn --transpile-only src/backend/server.ts",
-    "start:frontend": "vite",
     "generate:swagger": "ts-node src/backend/generate-swagger.ts",
-    "preview:frontend": "vite preview",
     "test": "jest --coverage",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
     "studio": "prisma studio",
     "db-reset": "prisma migrate reset"
   },

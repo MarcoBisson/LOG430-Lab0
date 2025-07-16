@@ -1,4 +1,4 @@
-import type { Store } from './Store';
+import type { Store } from '../../../../src/backend/domain/entities/Store';
 
 /**
  * @openapi

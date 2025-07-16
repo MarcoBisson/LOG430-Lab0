@@ -1,7 +1,7 @@
 import type { Store } from '@prisma/client';
-import type { IUserRepository } from '../../domain/repositories/IUserRepository';
-import type { User } from '../../domain/entities/User';
-import { prisma } from './PrismaClient';
+import { PrismaClient } from '@prisma/client';
+import type { IUserRepository } from './IUserRepository';
+import type { User } from '../entities/User';
 
 export class PrismaUserRepository implements IUserRepository {
     async getUser(username: string): Promise<User | null> {

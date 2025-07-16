@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
-import { AuthService } from '../../application/services/AuthService';
-import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
+import { AuthService } from '../services/AuthService';
+import { PrismaUserRepository } from '../../../../services/user-service/src/repositories/PrismaUserRepository';
 import { errorResponse } from '../../utils/errorResponse';
 import { createControllerLogger } from '../../utils/logger';
 

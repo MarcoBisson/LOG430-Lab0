@@ -1,4 +1,4 @@
-import { AuthService } from '../../../src/backend/application/services/AuthService';
+import { AuthService } from '../../../services/user-service/src/services/AuthService';
 
 jest.mock('jsonwebtoken', () => ({
     sign: jest.fn(),

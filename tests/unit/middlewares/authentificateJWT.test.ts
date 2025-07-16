@@ -1,7 +1,7 @@
 import type { Response, NextFunction } from 'express';
 import { authenticateJWT } from '../../../src/backend/interfaces/middlewares/authentificateJWT';
 import type { AuthenticatedRequest } from '../../../src/backend/interfaces/middlewares/authentificateJWT';
-import { AuthService } from '../../../src/backend/application/services/AuthService';
+import { AuthService } from '../../../services/user-service/src/services/AuthService';
 
 jest.mock('../../../src/backend/application/services/AuthService');
 

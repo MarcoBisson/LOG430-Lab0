@@ -2,7 +2,7 @@ import type { Response } from 'express';
 import { LogisticsService } from '../../application/services/LogisticsService';
 import { PrismaLogisticsRepository } from '../../infrastructure/prisma/PrismaLogisticsRepository';
 import { PrismaStoreRepository } from '../../infrastructure/prisma/PrismaStoreRepository';
-import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
+import { PrismaUserRepository } from '../../../../services/user-service/src/repositories/PrismaUserRepository';
 import type { AuthenticatedRequest } from '../middlewares/authentificateJWT';
 import { UserRole } from '@prisma/client';
 import { errorResponse } from '../../utils/errorResponse';

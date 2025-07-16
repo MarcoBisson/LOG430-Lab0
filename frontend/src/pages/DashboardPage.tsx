@@ -6,21 +6,17 @@ import styles  from './DashboardPage.module.css';
 import { ProductTable } from '../components/ProductTable';
 
 export default function DashboardPage() {
-    // Toujours appeler les hooks au début du composant, jamais dans une condition !
     const user = useAuthStore(state => state.user);
     const userRole = user?.role || null;
-    // Pagination state (offsets indépendants, limite unique)
     const [stockPage, setStockPage] = useState(1);
     const PAGE_SIZE = 20;
     const [report, setReport] = useState<ReportDTO | null>(null);
-    // Par défaut : intervalle = année en cours
     const currentYear = new Date().getFullYear();
     const defaultStart = `${currentYear}-01-01`;
     const defaultEnd = `${currentYear}-12-31`;
     const [startDate, setStartDate] = useState<string>(defaultStart);
     const [endDate, setEndDate] = useState<string>(defaultEnd);
 
-    // Utilitaire pour charger le rapport avec la pagination courante
     const fetchReport = async (
         sDate = startDate,
         eDate = endDate,
