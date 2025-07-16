@@ -12,8 +12,8 @@ describe('LogisticsService', () => {
     let mockStoreRepository: MockStoreRepository;
 
     beforeEach(() => {
-        mockLogisticsRepository = new MockLogisticsRepository();
         mockStoreRepository = new MockStoreRepository();
+        mockLogisticsRepository = new MockLogisticsRepository(mockStoreRepository);
         logisticsService = new LogisticsService(mockLogisticsRepository, mockStoreRepository);
     });
 
@@ -80,15 +80,25 @@ describe('LogisticsService', () => {
         });
 
         it('should approve replenishment request successfully', async () => {
+            // Ajouter le stock du produit 101 dans le magasin logistique (ID 2)
+            const logisticStoreStocks = [new StoreStock(1, 2, 101, 100)];
+            mockStoreRepository.seed([
+                new Store(1, 'Main Store', '123 Main St', 'SALES' as StoreType),
+                new Store(2, 'Warehouse', '456 Storage Ave', 'LOGISTICS' as StoreType),
+            ], logisticStoreStocks);
+
             const result = await logisticsService.approveReplenishment(1);
 
             expect(result.status).toBe('APPROVED');
             expect(result.id).toBe(1);
 
-            const centralStock = await mockLogisticsRepository.findAllCentralStock();
-            const product101Stock = centralStock.products.find((s: any) => s.productId === 101);
-            expect(product101Stock).toBeDefined();
-            expect(product101Stock!.stock).toBe(80);
+            // Vérifier que le stock du magasin logistique a été décrémenté
+            const updatedLogisticStock = await mockStoreRepository.findStoreStockByProduct(2, 101);
+            expect(updatedLogisticStock?.quantity).toBe(80); // 100 - 20 = 80
+
+            // Vérifier que le stock du magasin de vente a été incrémenté
+            const salesStoreStock = await mockStoreRepository.findStoreStockByProduct(1, 101);
+            expect(salesStoreStock?.quantity).toBe(20);
         });
 
         it('should throw error when request does not exist', async () => {
@@ -117,19 +127,40 @@ describe('LogisticsService', () => {
         });
 
         it('should throw error when insufficient central stock', async () => {
+            // Configurer un stock insuffisant dans le magasin logistique pour le produit 102
+            // Le test demande 10 mais nous ne mettons que 5 en stock
+            const insufficientStoreStocks = [new StoreStock(1, 2, 102, 5)];
+            mockStoreRepository.seed([
+                new Store(1, 'Main Store', '123 Main St', 'SALES' as StoreType),
+                new Store(2, 'Warehouse', '456 Storage Ave', 'LOGISTICS' as StoreType),
+            ], insufficientStoreStocks);
+
             await expect(logisticsService.approveReplenishment(2))
-                .rejects.toThrow('Insufficient central stock: available 5, requested 10');
+                .rejects.toThrow('Insufficient stock in logistics stores for product 102. Required: 10');
         });
 
         it('should increment store stock when approved', async () => {
-            const stores = [new Store(1, 'Test Store', '123 Test St', 'SALES' as StoreType)];
-            const storeStocks = [new StoreStock(1, 1, 101, 30)];
+            const stores = [
+                new Store(1, 'Test Store', '123 Test St', 'SALES' as StoreType),
+                new Store(2, 'Warehouse', '456 Storage Ave', 'LOGISTICS' as StoreType)
+            ];
+            const storeStocks = [
+                new StoreStock(1, 1, 101, 30), // Stock initial du magasin de vente
+                new StoreStock(2, 2, 101, 100) // Stock du magasin logistique
+            ];
             mockStoreRepository.seed(stores, storeStocks);
+
+            // Nous devons aussi configurer les magasins logistiques et la demande
+            const logisticStores = [stores[1]];
+            const requests = [
+                new ReplenishmentRequest(1, 1, 101, 20, 'PENDING' as ReplenishmentRequestStatus, new Date()),
+            ];
+            mockLogisticsRepository.seed([], requests, logisticStores);
 
             await logisticsService.approveReplenishment(1);
 
             const storeStock = await mockStoreRepository.findStoreStockByProduct(1, 101);
-            expect(storeStock?.quantity).toBe(50);
+            expect(storeStock?.quantity).toBe(50); // 30 + 20 = 50
         });
     });
 
@@ -216,10 +247,12 @@ describe('LogisticsService', () => {
         it('should handle complete replenishment workflow', async () => {
             const stores = [new Store(1, 'Store', '123 St', 'SALES' as StoreType)];
             const logisticStores = [new Store(2, 'Warehouse', '456 Ave', 'LOGISTICS' as StoreType)];
-            const centralStock = [{ productId: 101, stock: 100 }];
             
-            mockStoreRepository.seed(stores);
-            mockLogisticsRepository.seed(centralStock, [], logisticStores);
+            // Configurer le stock dans le magasin logistique (pas le stock central global)
+            const logisticStoreStocks = [new StoreStock(1, 2, 101, 100)]; // Store ID 2, Product 101, Quantity 100
+            
+            mockStoreRepository.seed(stores, logisticStoreStocks);
+            mockLogisticsRepository.seed([], [], logisticStores);
 
             const request = await logisticsService.requestReplenishment(1, 101, 25);
             expect(request.status).toBe('PENDING');
@@ -230,8 +263,13 @@ describe('LogisticsService', () => {
             const approved = await logisticsService.approveReplenishment(request.id);
             expect(approved.status).toBe('APPROVED');
 
-            const updatedCentralStock = await mockLogisticsRepository.findAllCentralStock();
-            expect(updatedCentralStock.products[0].stock).toBe(75);
+            // Vérifier que le stock du magasin logistique a été décrémenté
+            const updatedLogisticStock = await mockStoreRepository.findStoreStockByProduct(2, 101);
+            expect(updatedLogisticStock?.quantity).toBe(75);
+
+            // Vérifier que le stock du magasin de vente a été incrémenté
+            const salesStoreStock = await mockStoreRepository.findStoreStockByProduct(1, 101);
+            expect(salesStoreStock?.quantity).toBe(25);
         });
     });
 });

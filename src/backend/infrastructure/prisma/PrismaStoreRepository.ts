@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client';
 import type { IStoreRepository } from '../../domain/repositories/IStoreRepository';
 import type { Store } from '../../domain/entities/Store';
 import type { StoreStock } from '../../domain/entities/StoreStock';
-
-const prisma = new PrismaClient();
+import { prisma } from './PrismaClient';
 
 export class PrismaStoreRepository implements IStoreRepository {
     async findStoreById(id: number): Promise<Store | null> {

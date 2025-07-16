@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { InventoryController } from '../controllers/InventoryController';
 import { authenticateJWT } from '../middlewares/authentificateJWT';
+import { cacheMiddleware } from '../middlewares/cacheMiddleware';
 const inventoryRoutes = Router();
 
 /**
@@ -109,7 +110,16 @@ const inventoryRoutes = Router();
  *               $ref: '#/components/schemas/Error'
  */
 
-inventoryRoutes.get('/central', authenticateJWT, InventoryController.central);
-inventoryRoutes.get('/store/:storeId', authenticateJWT, InventoryController.store);
+inventoryRoutes.get('/central', 
+  authenticateJWT, 
+  cacheMiddleware('inventory:central', { ttl: 300 }), // 5 min cache
+  InventoryController.central,
+);
+
+inventoryRoutes.get('/store/:storeId', 
+  authenticateJWT, 
+  cacheMiddleware('inventory:store', { ttl: 180 }), // 3 min cache
+  InventoryController.store,
+);
 
 export default inventoryRoutes;

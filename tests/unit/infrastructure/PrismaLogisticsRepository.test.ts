@@ -14,14 +14,20 @@ const mockPrismaClient = {
         findMany: jest.fn(),
     },
     product: {
-        findMany: jest.fn(), // Ajoute ce mock pour éviter l'erreur sur product.findMany
+        findMany: jest.fn(),
     },
 };
 
+// Mock the entire PrismaClient module
 jest.mock('@prisma/client', () => ({
     PrismaClient: jest.fn(() => mockPrismaClient),
-    StoreType: { LOGISTICS: 'LOGISTICS', PHYSICAL: 'PHYSICAL', ONLINE: 'ONLINE' },
+    StoreType: { LOGISTICS: 'LOGISTICS', SALES: 'SALES', HEADQUARTERS: 'HEADQUARTERS' },
     ReplenishmentRequestStatus: { PENDING: 'PENDING', APPROVED: 'APPROVED', REJECTED: 'REJECTED' },
+}));
+
+// Mock the PrismaClient instance used in the repository
+jest.mock('../../../src/backend/infrastructure/prisma/PrismaClient', () => ({
+    prisma: mockPrismaClient,
 }));
 
 import { PrismaLogisticsRepository } from '../../../src/backend/infrastructure/prisma/PrismaLogisticsRepository';
@@ -35,25 +41,39 @@ describe('PrismaLogisticsRepository', () => {
     });
 
     test('should find all central stock', async () => {
-        // Simule groupBy si le repo l'utilise, sinon adapte findMany pour matcher la sortie attendue
-        mockPrismaClient.storeStock.groupBy = jest.fn().mockResolvedValue([
+        // Mock groupBy pour retourner des données agrégées
+        const groupedData = [
             { productId: 1, _sum: { quantity: 100 } },
             { productId: 2, _sum: { quantity: 50 } },
-        ]);
-        mockPrismaClient.product.findMany = jest.fn().mockResolvedValue([
+        ];
+        
+        // Mock findMany pour les informations produits
+        const productsData = [
             { id: 1, name: 'Produit 1' },
             { id: 2, name: 'Produit 2' },
-        ]);
+        ];
 
-        // Si le repo utilise groupBy :
+        // Premier appel groupBy pour les données paginées
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce(groupedData);
+        // Deuxième appel groupBy pour le total
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce(groupedData);
+        mockPrismaClient.product.findMany.mockResolvedValue(productsData);
+
         const result = await repository.findAllCentralStock();
 
-        expect(mockPrismaClient.storeStock.groupBy).toHaveBeenCalled();
-        expect(mockPrismaClient.product.findMany).toHaveBeenCalled();
-        expect(result.products).toEqual([
-            { productId: 1, stock: 100, name: 'Produit 1' },
-            { productId: 2, stock: 50, name: 'Produit 2' },
-        ]);
+        expect(mockPrismaClient.storeStock.groupBy).toHaveBeenCalledTimes(2);
+        expect(mockPrismaClient.product.findMany).toHaveBeenCalledWith({
+            where: { id: { in: [1, 2] } },
+            select: { id: true, name: true },
+        });
+        
+        expect(result).toEqual({
+            products: [
+                { productId: 1, stock: 100, name: 'Produit 1' },
+                { productId: 2, stock: 50, name: 'Produit 2' },
+            ],
+            total: 2,
+        });
     });
 
     test('should decrement central stock', async () => {
@@ -177,87 +197,86 @@ describe('PrismaLogisticsRepository', () => {
     });
 
     test('should use skip, take, and orderBy when page and limit are provided', async () => {
-        // Arrange
-        mockPrismaClient.storeStock.groupBy.mockResolvedValue([
+        const groupedData = [
             { productId: 1, _sum: { quantity: 10 } },
             { productId: 2, _sum: { quantity: 20 } },
-        ]);
-        mockPrismaClient.product.findMany.mockResolvedValue([
+        ];
+        
+        const productsData = [
             { id: 1, name: 'A' },
             { id: 2, name: 'B' },
-        ]);
-        // For total
-        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce([
-            { productId: 1, _sum: { quantity: 10 } },
-            { productId: 2, _sum: { quantity: 20 } },
-        ]).mockResolvedValueOnce([
-            { productId: 1, _sum: { quantity: 10 } },
-            { productId: 2, _sum: { quantity: 20 } },
-        ]);
+        ];
+
+        // Premier appel pour les données paginées
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce(groupedData);
+        // Deuxième appel pour le total
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce(groupedData);
+        mockPrismaClient.product.findMany.mockResolvedValue(productsData);
 
         await repository.findAllCentralStock(2, 5);
 
-        // Assert
-        expect(mockPrismaClient.storeStock.groupBy).toHaveBeenCalledWith(expect.objectContaining({
+        // Vérifier le premier appel groupBy avec pagination
+        expect(mockPrismaClient.storeStock.groupBy).toHaveBeenNthCalledWith(1, {
             by: ['productId'],
             where: { store: { type: 'LOGISTICS' } },
             _sum: { quantity: true },
             orderBy: { productId: 'asc' },
-            skip: 5,
+            skip: 5, // (2-1) * 5
             take: 5,
-        }));
+        });
+        
+        // Vérifier le deuxième appel groupBy pour le total
+        expect(mockPrismaClient.storeStock.groupBy).toHaveBeenNthCalledWith(2, {
+            by: ['productId'],
+            where: { store: { type: 'LOGISTICS' } },
+            _sum: { quantity: true },
+        });
     });
 
     test('should skip set 0 if page < 0', async () => {
-        mockPrismaClient.storeStock.groupBy.mockResolvedValue([
-            { productId: 1, _sum: { quantity: 10 } },
-        ]);
-        mockPrismaClient.product.findMany.mockResolvedValue([
-            { id: 1, name: 'A' },
-        ]);
-        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce([
-            { productId: 1, _sum: { quantity: 10 } },
-        ]).mockResolvedValueOnce([
-            { productId: 1, _sum: { quantity: 10 } },
-        ]);
+        const groupedData = [{ productId: 1, _sum: { quantity: 10 } }];
+        const productsData = [{ id: 1, name: 'A' }];
+
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce(groupedData);
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce(groupedData);
+        mockPrismaClient.product.findMany.mockResolvedValue(productsData);
+        
         await repository.findAllCentralStock(-1, 100);
-        expect(mockPrismaClient.storeStock.groupBy).toHaveBeenCalledWith(expect.objectContaining({
+        
+        expect(mockPrismaClient.storeStock.groupBy).toHaveBeenNthCalledWith(1, {
+            by: ['productId'],
+            where: { store: { type: 'LOGISTICS' } },
+            _sum: { quantity: true },
+            orderBy: { productId: 'asc' },
             skip: 0,
-            take: expect.any(Number),
-            orderBy: expect.anything(),
-        }));
+            take: 100,
+        });
     });
 
     test('should return correct product name mapping and stock 0 if quantity is null', async () => {
-        mockPrismaClient.storeStock.groupBy.mockResolvedValue([
-            { productId: 1, _sum: { quantity: null } },
-        ]);
-        mockPrismaClient.product.findMany.mockResolvedValue([
-            { id: 1, name: 'ProduitTest' },
-        ]);
-        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce([
-            { productId: 1, _sum: { quantity: null } },
-        ]).mockResolvedValueOnce([
-            { productId: 1, _sum: { quantity: null } },
-        ]);
+        const groupedData = [{ productId: 1, _sum: { quantity: null } }];
+        const productsData = [{ id: 1, name: 'ProduitTest' }];
+
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce(groupedData);
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce(groupedData);
+        mockPrismaClient.product.findMany.mockResolvedValue(productsData);
+        
         const result = await repository.findAllCentralStock();
+        
         expect(result.products[0].name).toBe('ProduitTest');
         expect(result.products[0].stock).toBe(0);
     });
 
     test('should return empty name if product name is null', async () => {
-        mockPrismaClient.storeStock.groupBy.mockResolvedValue([
-            { productId: 1, _sum: { quantity: null } },
-        ]);
-        mockPrismaClient.product.findMany.mockResolvedValue([
-            { id: 1, name: null },
-        ]);
-        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce([
-            { productId: 1, _sum: { quantity: null } },
-        ]).mockResolvedValueOnce([
-            { productId: 1, _sum: { quantity: null } },
-        ]);
+        const groupedData = [{ productId: 1, _sum: { quantity: null } }];
+        const productsData = [{ id: 1, name: null }];
+
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce(groupedData);
+        mockPrismaClient.storeStock.groupBy.mockResolvedValueOnce(groupedData);
+        mockPrismaClient.product.findMany.mockResolvedValue(productsData);
+        
         const result = await repository.findAllCentralStock();
+        
         expect(result.products[0].name).toBe('');
         expect(result.products[0].stock).toBe(0);
     });

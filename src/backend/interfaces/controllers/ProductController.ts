@@ -5,10 +5,12 @@ import type { AuthenticatedRequest } from '../middlewares/authentificateJWT';
 import { UserRole } from '@prisma/client';
 import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
 import { errorResponse } from '../../utils/errorResponse';
+import { createControllerLogger } from '../../utils/logger';
 
 const productRepository = new PrismaProductRepository();
 const productService = new ProductService(productRepository);
 const userRepository = new PrismaUserRepository();
+const log = createControllerLogger('ProductController');
 
 export class ProductController {
     /**
@@ -18,6 +20,7 @@ export class ProductController {
      */
     static async list(req: AuthenticatedRequest, res: Response) {
         const products = await productService.listProducts();
+        log.info('get list product successfull', {products});
         res.json(products);
     }
 
@@ -29,8 +32,10 @@ export class ProductController {
     static async get(req: AuthenticatedRequest, res: Response) {
         const p = await productService.getProductById(+req.params.id);
         if (p) {
+            log.info('getProductById successfull', {p});
             res.json(p);
         } else {
+            log.warn(`getProductById fail, productId ${req.params.id} not found`);
             errorResponse(res, 404, 'Not Found', 'Produit non trouvé', req.originalUrl);
         }
     }
@@ -43,8 +48,10 @@ export class ProductController {
     static async getByName(req: AuthenticatedRequest, res: Response) {
         const p = await productService.getProductsByName(req.params.name);
         if (p) {
+            log.info('getProductsByName successfull', {p});
             res.json(p);
         } else {
+            log.warn(`getProductsByName fail, product ${req.params.name} not found`);
             errorResponse(res, 404, 'Not Found', 'Produit non trouvé', req.originalUrl);
         }
     }
@@ -56,9 +63,11 @@ export class ProductController {
      */
     static async getByCategory(req: AuthenticatedRequest, res: Response) {
         const p = await productService.getProductsByCategory(req.params.category);
-        if (p.length > 0) {
+        if (p && p.length > 0) {
+            log.info('getProductsByCategory successfull', {p});
             res.json(p);
         } else {
+            log.warn(`getProductsByCategory fail, products from category ${req.params.category} not found`);
             errorResponse(res, 404, 'Not Found', 'Produit non trouvé', req.originalUrl);
         }
     }
@@ -71,8 +80,10 @@ export class ProductController {
     static async create(req: AuthenticatedRequest, res: Response) {
         if (req.user && req.user.role !== UserRole.CLIENT){
             const p = await productService.createProduct(+req.params.id, req.body);
+            log.info(`Create product ${p.name} successfull`, {p});
             res.status(201).json(p);
         } else {
+            log.warn(`Action Unauthorized for ${req.user?.username} (${req.user?.role})`);
             errorResponse(res, 401, 'Unauthorized', 'Action Unauthorized', req.originalUrl);
         }
     }
@@ -85,8 +96,10 @@ export class ProductController {
     static async update(req: AuthenticatedRequest, res: Response) {
         if (req.user && req.user.role !== UserRole.CLIENT){
             const p = await productService.updateProduct(+req.params.productId,+req.params.storeId, req.body);
+            log.info(`Update product ${p.name} successfull`, {p});
             res.json(p);
         } else {
+            log.warn(`Action Unauthorized for ${req.user?.username} (${req.user?.role})`);
             errorResponse(res, 401, 'Unauthorized', 'Action Unauthorized', req.originalUrl);
         }
     }
@@ -99,8 +112,10 @@ export class ProductController {
     static async delete(req: AuthenticatedRequest, res: Response) {
         if (req.user && req.user.role !== UserRole.CLIENT){
             await productService.deleteProduct(+req.params.id);
+            log.info(`Delete product id ${req.params.id} successfull`);
             res.status(204).end();
         } else {
+            log.warn(`Action Unauthorized for ${req.user?.username} (${req.user?.role})`);
             errorResponse(res, 401, 'Unauthorized', 'Action Unauthorized', req.originalUrl);
         }
     }
@@ -122,14 +137,18 @@ export class ProductController {
             if (access.find( store => store.id === +storeId)){
                 const p = await productService.getProductsByStore(+storeId, page, limit);
                 if (p && p.products && p.products.length > 0) {
+                    log.info(`getProductsByStore for store ${storeId} successfull`, {p});
                     res.json(p);
                 } else {
+                    log.warn(`getProductsByStore fail, no products found for store ${storeId}`);
                     errorResponse(res, 404, 'Not Found', 'Produit non trouvé', req.originalUrl);
                 }
             } else {
+                log.warn(`Access Unauthorized for ${req.user?.username} (${req.user?.role})`);
                 errorResponse(res, 401, 'Unauthorized', 'Acces Unauthorized', req.originalUrl);
             }
         } else {
+            log.warn('Invalid token');
             errorResponse(res, 403, 'Forbidden', 'Invalid token', req.originalUrl);
         }
     }

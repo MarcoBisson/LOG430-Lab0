@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import { LogisticsController } from '../controllers/LogisticsController';
 import { authenticateJWT } from '../middlewares/authentificateJWT';
+import { cacheMiddleware, invalidationMiddleware } from '../middlewares/cacheMiddleware';
 const logisticsRoutes = Router();
 
 /**
  * @openapi
- * /api/logistics/replenishment/request:
+ * /api/logistics/replenishment:
  *   post:
  *     summary: Demande un réapprovisionnement
  *     tags:
@@ -56,59 +57,24 @@ const logisticsRoutes = Router();
  *               $ref: '#/components/schemas/Error'
  */
 
-logisticsRoutes.post('/replenishment', authenticateJWT, LogisticsController.request);
+logisticsRoutes.post('/replenishment', 
+  authenticateJWT, 
+  invalidationMiddleware('logistics'),
+  LogisticsController.request,
+);
 
 /**
  * @openapi
- * /api/logistics/replenishment/approve/{id}:
- *   post:
- *     summary: Approuve un réapprovisionnement
- *     tags:
- *       - Logistique
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID du réapprovisionnement
- *     responses:
- *       200:
- *         description: Réapprovisionnement approuvé
- *         content:
- *           application/json:
- *              schema:
- *               $ref: '#/components/schemas/ReplenishmentRequest'
- *       400:
- *         description: Erreur de validation
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       401:
- *         description: Accès non autorisé
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
-
-logisticsRoutes.get('/replenishment', authenticateJWT, LogisticsController.replenishments);
-
-/**
- * @openapi
- * /api/logistics/alerts:
+ * /api/logistics/replenishment:
  *   get:
- *     summary: Récupère les alertes de stock critique
+ *     summary: Récupère la liste des demandes de réapprovisionnement
  *     tags:
  *       - Logistique
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Liste des alertes
+ *         description: Liste des demandes de réapprovisionnement
  *         content:
  *           application/json:
  *             schema:
@@ -122,8 +88,59 @@ logisticsRoutes.get('/replenishment', authenticateJWT, LogisticsController.reple
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
+logisticsRoutes.get('/replenishment', 
+  authenticateJWT, 
+  cacheMiddleware('logistics:requests', { ttl: 120 }), // 2 min cache
+  LogisticsController.replenishments,
+);
 
-logisticsRoutes.post('/replenishment/:id/approve', authenticateJWT, LogisticsController.approve);
+/**
+ * @openapi
+ * /api/logistics/replenishment/{id}/approve:
+ *   post:
+ *     summary: Approuve une demande de réapprovisionnement
+ *     tags:
+ *       - Logistique
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la demande de réapprovisionnement à approuver
+ *     responses:
+ *       200:
+ *         description: Demande de réapprovisionnement approuvée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ReplenishmentRequest'
+ *       400:
+ *         description: Erreur de validation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Accès non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Demande de réapprovisionnement non trouvée
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+logisticsRoutes.post('/replenishment/:id/approve', 
+  authenticateJWT, 
+  invalidationMiddleware('logistics'),
+  LogisticsController.approve,
+);
 
 /**
  * @openapi
@@ -151,6 +168,10 @@ logisticsRoutes.post('/replenishment/:id/approve', authenticateJWT, LogisticsCon
  *               $ref: '#/components/schemas/Error'
  */
 
-logisticsRoutes.get('/alerts', authenticateJWT, LogisticsController.alerts);
+logisticsRoutes.get('/alerts', 
+  authenticateJWT, 
+  cacheMiddleware('logistics:alerts', { ttl: 60 }), // 1 min cache pour alertes temps réel
+  LogisticsController.alerts,
+);
 
 export default logisticsRoutes;

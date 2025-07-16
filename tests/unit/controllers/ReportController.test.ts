@@ -56,7 +56,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.ADMIN,
             };
-            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
+            req.originalUrl = '/api/reports/consolidated';
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -92,7 +92,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.STAFF,
             };
-            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
+            req.originalUrl = '/api/reports/consolidated';
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -126,7 +126,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.CLIENT,
             };
-            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
+            req.originalUrl = '/api/reports/consolidated';
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -164,7 +164,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.ADMIN,
             };
-            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
+            req.originalUrl = '/api/reports/consolidated';
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -202,7 +202,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.ADMIN,
             };
-            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
+            req.originalUrl = '/api/reports/consolidated';
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -221,7 +221,7 @@ describe('ReportController', () => {
         test('should return 403 when no user is provided', async () => {
             req.query = {};
             req.user = undefined;
-            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
+            req.originalUrl = '/api/reports/consolidated';
 
             await ReportController.consolidated(req as AuthenticatedRequest, res as Response);
 
@@ -231,7 +231,7 @@ describe('ReportController', () => {
                 status: 403,
                 error: 'Forbidden',
                 message: 'Invalid token',
-                path: undefined,
+                path: '/api/reports/consolidated',
                 timestamp: expect.any(String), 
             }));
         });
@@ -244,7 +244,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.ADMIN,
             };
-            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
+            req.originalUrl = '/api/reports/consolidated';
 
             mockReportService.getConsolidatedReport.mockRejectedValue(new Error('Service error'));
 
@@ -255,7 +255,7 @@ describe('ReportController', () => {
                 status: 500,
                 error: 'Internal Server Error',
                 message: 'Service error',
-                path: undefined,
+                path: '/api/reports/consolidated',
                 timestamp: expect.any(String), 
             }));
         });
@@ -277,7 +277,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.ADMIN,
             };
-            Object.defineProperty(req, 'path', { value: '/api/reports/consolidated' });
+            req.originalUrl = '/api/reports/consolidated';
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -310,6 +310,7 @@ describe('ReportController', () => {
                 password: 'password123',
                 role: UserRole.ADMIN,
             };
+            req.originalUrl = '/api/reports/consolidated';
 
             mockReportService.getConsolidatedReport.mockResolvedValue(mockReport);
 
@@ -326,11 +327,24 @@ describe('ReportController', () => {
         });
     });
     test('should handle error in consolidated', async () => {
-        const req: any = { user: { id: 1 }, originalUrl: '/api/reports/consolidated' };
+        const req: any = { 
+            user: { id: 1 }, 
+            originalUrl: '/api/reports/consolidated',
+            query: {}
+        };
         const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
-        (ReportController as any).reportService = { getConsolidatedReport: jest.fn().mockRejectedValue(new Error('fail')) };
+        
+        mockReportService.getConsolidatedReport.mockRejectedValue(new Error('fail'));
+        
         await ReportController.consolidated(req, res);
         expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+            status: 500,
+            error: 'Internal Server Error',
+            message: 'fail',
+            path: '/api/reports/consolidated',
+            timestamp: expect.any(String),
+        }));
     });
 
     test('should return result if limit and stockOffset are provided', async () => {
@@ -360,15 +374,23 @@ describe('ReportController', () => {
         );
     });
 
-    test('should return 500 if user is not authenticated', async () => {
-        const req: any = { user: null, originalUrl: '/api/reports/consolidated' };
+    test('should return 403 if user is not authenticated', async () => {
+        const req: any = { 
+            user: null, 
+            originalUrl: '/api/reports/consolidated',
+            query: {}
+        };
         const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+        
         await ReportController.consolidated(req, res);
-        expect(res.status).toHaveBeenCalledWith(500);
+        
+        expect(res.status).toHaveBeenCalledWith(403);
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-            status: 500,
-            error: 'Internal Server Error',
-            message: expect.any(String),
+            status: 403,
+            error: 'Forbidden',
+            message: 'Invalid token',
+            path: '/api/reports/consolidated',
+            timestamp: expect.any(String),
         }));
     });
 });

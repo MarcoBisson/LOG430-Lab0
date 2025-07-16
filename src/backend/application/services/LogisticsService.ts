@@ -31,7 +31,7 @@ export class LogisticsService {
      * @param requestId L'ID de la demande de réapprovisionnement à approuver.
      * @returns Une promesse qui résout à la demande de réapprovisionnement mise à jour.
      * @throws Error si la demande de réapprovisionnement n'existe pas, si le magasin n'existe pas ou si le type de magasin n'est pas valide pour la réapprovisionnement.
-     * @throws Error si le magasin n'est pas trouvé ou si le type de magasin n'est pas valide pour la réapprovisionnement.
+     * @throws Error si aucun magasin logistique ne contient le produit demandé ou si le stock est insuffisant.
      */
     async approveReplenishment(requestId: number) {
         const req = await this.logisticRepo.getReplenishmentRequest(requestId);
@@ -42,9 +42,30 @@ export class LogisticsService {
         if (store.type !== 'SALES')
             throw new Error('Invalid store type for replenishment');
 
-        const logiStore = await this.logisticRepo.getLogisticStores();
+        // Récupérer tous les magasins logistiques
+        const logisticStores = await this.logisticRepo.getLogisticStores();
+        if (!logisticStores || logisticStores.length === 0) {
+            throw new Error('No logistics stores available');
+        }
 
-        await this.logisticRepo.decrementCentralStock(logiStore[0].id, req.productId, req.quantity);
+        // Trouver le magasin logistique qui contient le produit demandé avec suffisamment de stock
+        let sourceLogisticStore = null;
+
+        for (const logisticStore of logisticStores) {
+            // Vérifier le stock du produit dans ce magasin logistique
+            const stockInfo = await this.storeRepo.findStoreStockByProduct(logisticStore.id, req.productId);
+            if (stockInfo && stockInfo.quantity >= req.quantity) {
+                sourceLogisticStore = logisticStore;
+                break;
+            }
+        }
+
+        if (!sourceLogisticStore) {
+            throw new Error(`Insufficient stock in logistics stores for product ${req.productId}. Required: ${req.quantity}`);
+        }
+
+        // Effectuer le transfert de stock
+        await this.logisticRepo.decrementCentralStock(sourceLogisticStore.id, req.productId, req.quantity);
         await this.storeRepo.incrementStoreStock(req.storeId, req.productId, req.quantity);
 
         return this.logisticRepo.updateReplenishmentStatus(requestId, ReplenishmentRequestStatus.APPROVED);

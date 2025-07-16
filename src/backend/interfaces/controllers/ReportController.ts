@@ -4,10 +4,12 @@ import { PrismaSaleRepository } from '../../infrastructure/prisma/PrismaSaleRepo
 import { PrismaLogisticsRepository } from '../../infrastructure/prisma/PrismaLogisticsRepository';
 import { errorResponse } from '../../utils/errorResponse';
 import type { AuthenticatedRequest } from '../middlewares/authentificateJWT';
+import { createControllerLogger } from '../../utils/logger';
 
 const saleRepository = new PrismaSaleRepository();
-const logisticRepository = new PrismaLogisticsRepository();
-const reportService = new ReportService(saleRepository, logisticRepository);
+const logisticsRepository = new PrismaLogisticsRepository();
+const reportService = new ReportService(saleRepository, logisticsRepository);
+const log = createControllerLogger('ReportController');
 
 export class ReportController {
     /**
@@ -29,12 +31,15 @@ export class ReportController {
                         stockOffset: stockOffset ? parseInt(stockOffset as string) : undefined,
                     },
                 );
+                log.info(`getConsolidateReport from ${startDate} to ${endDate} successful`, {data});
                 res.json(data);
             } else {
+                log.warn('Invalid token');
                 errorResponse(res, 403, 'Forbidden', 'Invalid token', req.originalUrl);
             }
-        } catch (e: any) {
-            errorResponse(res, 500, 'Internal Server Error', e.message, req.originalUrl);
+        } catch (err: any) {
+            log.error('Error found', {message: err.message});
+            errorResponse(res, 500, 'Internal Server Error', err.message, req.originalUrl);
         }
     }
 }

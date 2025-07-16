@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { SaleController } from '../controllers/SaleController';
 import { authenticateJWT } from '../middlewares/authentificateJWT';
+import { invalidationMiddleware } from '../middlewares/cacheMiddleware';
+import { redisCacheService } from '../../application/services/RedisCacheService';
 const saleRoutes = Router();
 
 /**
@@ -40,7 +42,26 @@ const saleRoutes = Router();
  *               $ref: '#/components/schemas/Sale'
  */
 
-saleRoutes.post('/', authenticateJWT, SaleController.record);
+saleRoutes.post('/', 
+  authenticateJWT, 
+  // Multiples invalidations après une vente (impacte plusieurs domaines)
+  invalidationMiddleware('sales'),
+  (req, res, next) => {
+    // Invalidation secondaire pour inventory et reports après la réponse
+    const originalJson = res.json;
+    res.json = function(data: any) {
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        Promise.all([
+          redisCacheService.smartInvalidation('inventory', 'update'),
+          redisCacheService.smartInvalidation('reports', 'update'),
+        ]).catch(error => console.error('Invalidation error:', error));
+      }
+      return originalJson.call(this, data);
+    };
+    next();
+  },
+  SaleController.record,
+);
 
 /**
  * @openapi

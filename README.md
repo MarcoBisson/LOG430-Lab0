@@ -300,3 +300,54 @@ flowchart TD
 
 #### Exemple de résultat pipeline
 ![Workflow passed!](screenshots/CIisWorking.png)
+
+## Cache Redis distribué
+
+### Vue d'ensemble
+
+Le système intègre un **cache Redis distribué** pour améliorer significativement les performances :
+
+- **Cache applicatif** : Middleware Express automatique avec TTL intelligents
+- **Cache NGINX** : Intégration Lua pour cache HTTP au niveau reverse proxy  
+- **Gestion multi-DB** : 4 bases Redis spécialisées (API, Sessions, Métriques, Métadonnées)
+- **Invalidation intelligente** : Patterns automatiques selon les modifications de données
+- **Monitoring complet** : Statistiques, métriques, logs structurés
+
+### Architecture cache
+
+```
+┌─────────────────┐    Cache HTTP    ┌─────────────────┐    Cache App     ┌─────────────────┐
+│     Client      │◄────────────────►│  NGINX + Lua    │◄────────────────►│   Redis Cluster │
+│   (Browser)     │                  │  Load Balancer  │                  │                 │
+└─────────────────┘                  └─────────────────┘                  │ DB0: API Cache  │
+                                              │                           │ DB1: Sessions   │
+                                              ▼                           │ DB2: Metrics    │
+                                     ┌─────────────────┐                  │ DB3: Metadata   │
+                                     │ Backend Express │◄─────────────────┤                 │
+                                     │ Cache Middleware│                  └─────────────────┘
+                                     └─────────────────┘
+```
+
+### Configuration TTL intelligente
+
+| Type de contenu | TTL | Justification |
+|----------------|-----|---------------|
+| `products:list` | 5 min | Données fréquemment consultées |
+| `products:detail` | 10 min | Détails produit plus stables |
+| `inventory:store` | 3 min | Stock magasin change souvent |
+| `logistics:alerts` | 1 min | Alertes critiques temps réel |
+| `sales:reports` | 15 min | Rapports de vente |
+| `sessions` | 1 heure | Sessions utilisateur |
+
+### Endpoints de monitoring
+
+```bash
+# Statistiques du cache
+curl http://localhost:3030/api/cache/stats
+
+# Invalidation manuelle  
+curl -X POST "http://localhost:3030/api/cache/invalidate?pattern=products"
+
+# Métriques Prometheus
+curl http://localhost:3030/metrics
+```

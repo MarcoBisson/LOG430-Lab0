@@ -58,3 +58,33 @@ export class ProductStock extends Product {
         super(id, name, price, description, category);
     }
 }
+
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    ProductInput:
+ *      type: object
+ *      required:
+ *        - name
+ *        - category
+ *        - price
+ *        - quantity
+ *      properties:
+ *        name:
+ *          type: string
+ *          example: "Coca-Cola"
+ *        category:
+ *          type: string
+ *          example: "Boisson"
+ *        price:
+ *          type: number
+ *          format: float
+ *          example: 1.99
+ *        stock:
+ *          type: integer
+ *          example: 100
+ *        description:
+ *          type: string
+ *          example: "Soda rafraîchissant 500ml"
+ */

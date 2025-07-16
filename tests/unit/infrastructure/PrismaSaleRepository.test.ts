@@ -20,8 +20,14 @@ const mockPrismaClient = {
 
 jest.mock('@prisma/client', () => ({
     PrismaClient: jest.fn(() => mockPrismaClient),
+    StoreType: { LOGISTICS: 'LOGISTICS', SALES: 'SALES', HEADQUARTERS: 'HEADQUARTERS' },
+    ReplenishmentRequestStatus: { PENDING: 'PENDING', APPROVED: 'APPROVED', REJECTED: 'REJECTED' },
 }));
 
+// Mock the PrismaClient instance used in the repository
+jest.mock('../../../src/backend/infrastructure/prisma/PrismaClient', () => ({
+    prisma: mockPrismaClient,
+}));
 import { PrismaSaleRepository } from '../../../src/backend/infrastructure/prisma/PrismaSaleRepository';
 
 describe('PrismaSaleRepository', () => {

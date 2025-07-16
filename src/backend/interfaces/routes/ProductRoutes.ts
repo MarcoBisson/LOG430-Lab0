@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ProductController } from '../controllers/ProductController';
 import { authenticateJWT } from '../middlewares/authentificateJWT';
+import { cacheMiddleware, invalidationMiddleware } from '../middlewares/cacheMiddleware';
 const productRoutes = Router();
 
 /**
@@ -29,7 +30,11 @@ const productRoutes = Router();
  *               $ref: '#/components/schemas/Error'
  */
 
-productRoutes.get('/', authenticateJWT, ProductController.list);
+productRoutes.get('/', 
+  authenticateJWT, 
+  cacheMiddleware('products:list', { ttl: 300 }), // 5 min cache
+  ProductController.list,
+);
 
 /**
  * @openapi
@@ -61,7 +66,11 @@ productRoutes.get('/', authenticateJWT, ProductController.list);
  *               $ref: '#/components/schemas/Error'
  */
 
-productRoutes.get('/:id', authenticateJWT, ProductController.get);
+productRoutes.get('/:id', 
+  authenticateJWT, 
+  cacheMiddleware('products:detail', { ttl: 600 }), // 10 min cache
+  ProductController.get,
+);
 
 /**
  * @openapi
@@ -167,7 +176,11 @@ productRoutes.get('/search/category/:category', authenticateJWT, ProductControll
  *               $ref: '#/components/schemas/Error'
  */
 
-productRoutes.post('/store/:id', authenticateJWT, ProductController.create);
+productRoutes.post('/store/:id', 
+  authenticateJWT, 
+  invalidationMiddleware('products'), // Invalide le cache des produits après création
+  ProductController.create,
+);
 
 /**
  * @openapi
@@ -210,7 +223,11 @@ productRoutes.post('/store/:id', authenticateJWT, ProductController.create);
  *               $ref: '#/components/schemas/Error'
  */
 
-productRoutes.put('/store/:storeId/:productId', authenticateJWT, ProductController.update);
+productRoutes.put('/store/:storeId/product/:productId', 
+  authenticateJWT, 
+  invalidationMiddleware('products'), // Invalide le cache des produits après modification
+  ProductController.update,
+);
 
 /**
  * @openapi
@@ -238,7 +255,11 @@ productRoutes.put('/store/:storeId/:productId', authenticateJWT, ProductControll
  *               $ref: '#/components/schemas/Error'
  */
 
-productRoutes.delete('/:id', authenticateJWT, ProductController.delete);
+productRoutes.delete('/:id', 
+  authenticateJWT, 
+  invalidationMiddleware('products'), // Invalide le cache des produits après suppression
+  ProductController.delete,
+);
 
 /**
  * @openapi
@@ -295,6 +316,10 @@ productRoutes.delete('/:id', authenticateJWT, ProductController.delete);
  *               $ref: '#/components/schemas/Error'
  */
 
-productRoutes.get('/store/:id', authenticateJWT, ProductController.getByStore);
+productRoutes.get('/store/:id', 
+  authenticateJWT, 
+  cacheMiddleware('products:store', { ttl: 240 }), // 4 min cache pour produits par magasin
+  ProductController.getByStore,
+);
 
 export default productRoutes;

@@ -82,7 +82,7 @@ export class ProductService {
     async updateProduct(
         productId: number,
         storeId: number,
-        data: { name?: string; price?: number; description?: string; category?: string; stock: number},
+        data: { name?: string; price?: number; description?: string; category?: string; stock?: number},
     ): Promise<ProductStock> {
         const p = await this.productRepo.updateProduct(productId, storeId, data);
         return new ProductStock(p.id, p.name, p.price, p.description, p.category, p.stock);

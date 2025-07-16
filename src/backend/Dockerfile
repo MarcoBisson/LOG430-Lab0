@@ -11,6 +11,6 @@ RUN npm install --legacy-peer-deps
 
 RUN npm run build:backend
 
-EXPOSE 3000
+EXPOSE 3030
 
 CMD ["npm", "run", "start:backend"]

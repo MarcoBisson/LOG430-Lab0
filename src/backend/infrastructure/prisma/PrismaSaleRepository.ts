@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client';
 import type { ISaleRepository } from '../../domain/repositories/ISaleRepository';
 import type { Sale } from '../../domain/entities/Sale';
 import type { SaleItem } from '../../domain/entities/SaleItem';
-
-const prisma = new PrismaClient();
+import { prisma } from './PrismaClient';
 
 export class PrismaSaleRepository implements ISaleRepository {
     async createSale(storeId: number, items: { productId: number; quantity: number }[]): Promise<Sale & { saleItems: SaleItem[] }> {

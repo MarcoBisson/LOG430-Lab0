@@ -18,6 +18,30 @@ jest.mock('../../../src/backend/infrastructure/prisma/PrismaSaleRepository', () 
 
 jest.mock('../../../src/backend/infrastructure/prisma/PrismaStoreRepository');
 
+// Mock logger
+jest.mock('../../../src/backend/utils/logger', () => ({
+    createControllerLogger: jest.fn(() => ({
+        info: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+        debug: jest.fn(),
+    })),
+}));
+
+// Mock errorResponse
+import { errorResponse } from '../../../src/backend/utils/errorResponse';
+jest.mock('../../../src/backend/utils/errorResponse', () => ({
+    errorResponse: jest.fn((res, status, error, message, path) => {
+        res.status(status).json({
+            status,
+            error,
+            message,
+            path,
+            timestamp: new Date().toISOString(),
+        });
+    }),
+}));
+
 import { ReturnController } from '../../../src/backend/interfaces/controllers/ReturnController';
 
 describe('ReturnController', () => {
@@ -25,7 +49,10 @@ describe('ReturnController', () => {
     let res: Partial<Response>;
 
     beforeEach(() => {
-        req = {};
+        req = {
+            body: {},
+            originalUrl: '/api/returns/process',
+        };
         res = {
             json: jest.fn(),
             status: jest.fn().mockReturnThis(),
@@ -45,6 +72,7 @@ describe('ReturnController', () => {
             };
 
             req.body = { saleId: 1 };
+            req.originalUrl = '/api/returns/process';
 
             mockSaleRepository.getSaleById.mockResolvedValue(mockSale);
             mockReturnService.processReturn.mockResolvedValue(undefined);
@@ -57,18 +85,17 @@ describe('ReturnController', () => {
             expect(res.end).toHaveBeenCalledTimes(1);
         });
 
-        test('should process return when sale does not exist and not continues with saleId', async () => {
+        test('should return 404 when sale does not exist', async () => {
             req.body = { saleId: 999 };
+            req.originalUrl = '/api/returns/process';
 
             mockSaleRepository.getSaleById.mockResolvedValue(null);
-            mockReturnService.processReturn.mockResolvedValue(undefined);
 
             await ReturnController.process(req as Request, res as Response);
 
             expect(mockSaleRepository.getSaleById).toHaveBeenCalledWith(999);
-            expect(mockReturnService.processReturn).toHaveBeenCalledWith(999);
-            expect(res.status).toHaveBeenCalledWith(204);
-            expect(res.end).toHaveBeenCalledTimes(1);
+            expect(mockReturnService.processReturn).not.toHaveBeenCalled();
+            expect(errorResponse).toHaveBeenCalledWith(res, 404, 'Not Found', 'Ventes introuvable', '/api/returns/process');
         });
 
         test('should handle string saleId in body', async () => {
@@ -80,6 +107,7 @@ describe('ReturnController', () => {
             };
 
             req.body = { saleId: '42' };
+            req.originalUrl = '/api/returns/process';
 
             mockSaleRepository.getSaleById.mockResolvedValue(mockSale);
             mockReturnService.processReturn.mockResolvedValue(undefined);
@@ -93,9 +121,17 @@ describe('ReturnController', () => {
         });
 
         test('should handle numeric conversion for saleId', async () => {
-            req.body = { saleId: 100 };
+            const mockSale = {
+                id: 100,
+                storeId: 1,
+                total: 150,
+                date: new Date('2023-01-03'),
+            };
 
-            mockSaleRepository.getSaleById.mockResolvedValue(null);
+            req.body = { saleId: 100 };
+            req.originalUrl = '/api/returns/process';
+
+            mockSaleRepository.getSaleById.mockResolvedValue(mockSale);
             mockReturnService.processReturn.mockResolvedValue(undefined);
 
             await ReturnController.process(req as Request, res as Response);
@@ -115,25 +151,29 @@ describe('ReturnController', () => {
             };
 
             req.body = { saleId: 1 };
+            req.originalUrl = '/api/returns/process';
 
             mockSaleRepository.getSaleById.mockResolvedValue(mockSale);
             mockReturnService.processReturn.mockRejectedValue(new Error('Service error'));
 
-            await expect(ReturnController.process(req as Request, res as Response)).rejects.toThrow('Service error');
+            await ReturnController.process(req as Request, res as Response);
 
             expect(mockSaleRepository.getSaleById).toHaveBeenCalledWith(1);
             expect(mockReturnService.processReturn).toHaveBeenCalledWith(1);
+            expect(errorResponse).toHaveBeenCalledWith(res, 400, 'Bad Request', 'Erreur processus de retour pour saleId 1', '/api/returns/process');
         });
 
         test('should handle repository errors gracefully', async () => {
             req.body = { saleId: 1 };
+            req.originalUrl = '/api/returns/process';
 
             mockSaleRepository.getSaleById.mockRejectedValue(new Error('Repository error'));
 
-            await expect(ReturnController.process(req as Request, res as Response)).rejects.toThrow('Repository error');
+            await ReturnController.process(req as Request, res as Response);
 
             expect(mockSaleRepository.getSaleById).toHaveBeenCalledWith(1);
             expect(mockReturnService.processReturn).not.toHaveBeenCalled();
+            expect(errorResponse).toHaveBeenCalledWith(res, 400, 'Bad Request', 'Erreur processus de retour pour saleId 1', '/api/returns/process');
         });
     });
 });

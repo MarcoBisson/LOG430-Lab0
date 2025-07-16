@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 
+// Mock all dependencies before imports
 const mockAuthService = {
     comparePassword: jest.fn(),
     generateToken: jest.fn(),
@@ -9,6 +10,30 @@ const mockUserRepository = {
     getUser: jest.fn(),
 };
 
+const mockErrorResponse = jest.fn();
+const mockLogger = {
+    warn: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+};
+jest.mock('../../../src/backend/utils/errorResponse', () => ({
+    errorResponse: mockErrorResponse,
+}));
+
+jest.mock('../../../src/backend/utils/logger', () => ({
+    createControllerLogger: jest.fn(() => mockLogger),
+}));
+
+// Mock any Redis cache service to avoid connections
+jest.mock('../../../src/backend/application/services/RedisCacheService', () => ({
+    redisCacheService: {
+        isHealthy: jest.fn(() => true),
+        get: jest.fn(),
+        set: jest.fn(),
+        smartInvalidation: jest.fn(),
+    },
+}));
 jest.mock('../../../src/backend/application/services/AuthService', () => ({
     AuthService: mockAuthService,
 }));
@@ -24,7 +49,10 @@ describe('AuthController login', () => {
     let mockResponse: Partial<Response>;
 
     beforeEach(() => {
-        mockRequest = { body: {} };
+        mockRequest = { 
+            body: {},
+            originalUrl: '/api/auth/login' 
+        };
         mockResponse = {
             json: jest.fn(),
             status: jest.fn().mockReturnThis(),
@@ -55,13 +83,12 @@ describe('AuthController login', () => {
 
         await AuthController.login(mockRequest as Request, mockResponse as Response);
 
-        expect(mockResponse.status).toHaveBeenCalledWith(401);
-        expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
-            status: 401,
-            error: 'Unauthorized',
-            message: 'Invalid credentials',
-            path: undefined,
-            timestamp: expect.any(String),
-        }));
+        expect(mockErrorResponse).toHaveBeenCalledWith(
+            mockResponse,
+            401,
+            'Unauthorized',
+            'Invalid credentials',
+            '/api/auth/login'
+        );
     });
 });

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ReportController } from '../controllers/ReportController';
 import { authenticateJWT } from '../middlewares/authentificateJWT';
+import { cacheMiddleware } from '../middlewares/cacheMiddleware';
 
 const reportRoutes = Router();
 
@@ -93,6 +94,10 @@ const reportRoutes = Router();
  *               $ref: '#/components/schemas/Error'
  */
 
-reportRoutes.get('/consolidated', authenticateJWT,  ReportController.consolidated);
+reportRoutes.get('/consolidated', 
+  authenticateJWT, 
+  cacheMiddleware('reports:consolidated', { ttl: 600 }), // 10 min cache pour rapports consolidés
+  ReportController.consolidated,
+);
 
 export default reportRoutes;

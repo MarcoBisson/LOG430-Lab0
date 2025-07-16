@@ -73,7 +73,7 @@ export async function createProduct(storeId:number, data: Omit<ProductDTO, 'id'>
  * @returns Une promesse qui résout le ProductDTO mis à jour.
  */
 export async function updateProduct(productId: number, storeId:number, data: Partial<Omit<ProductDTO, 'id'>>): Promise<ProductDTO> {
-    return authFetch(`${API_BASE}/products/store/${storeId}/${productId}`, {
+    return authFetch(`${API_BASE}/products/store/${storeId}/product/${productId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

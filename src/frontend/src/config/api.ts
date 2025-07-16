@@ -1,1 +1,2 @@
-export const API_BASE = 'http://localhost:3000/api';
+// Configuration API - utilise NGINX load balancer
+export const API_BASE = 'http://localhost/api';

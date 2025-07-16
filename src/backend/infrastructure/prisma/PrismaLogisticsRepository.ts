@@ -1,11 +1,10 @@
 import type { StoreStock} from '@prisma/client';
-import { PrismaClient, StoreType } from '@prisma/client';
+import { StoreType } from '@prisma/client';
 import type { ReplenishmentRequestStatus } from '@prisma/client';
 import type { ILogisticsRepository } from '../../domain/repositories/ILogisticsRepository';
 import type { ReplenishmentRequest } from '../../domain/entities/ReplenishmentRequest';
 import type { Store } from '../../domain/entities/Store';
-
-const prisma = new PrismaClient();
+import { prisma } from './PrismaClient';
 
 export class PrismaLogisticsRepository implements ILogisticsRepository {
     async findAllCentralStock(page?: number, limit?: number): Promise<{ products: { productId: number; stock: number; name: string }[]; total: number }> {

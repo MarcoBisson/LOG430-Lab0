@@ -39,7 +39,15 @@ export class MockLogisticsRepository implements ILogisticsRepository {
         return { products, total };
     }
 
-    async decrementCentralStock(_storeId: number, productId: number, qty: number): Promise<StoreStock> {
+    constructor(private storeRepository?: any) {}
+
+    async decrementCentralStock(storeId: number, productId: number, qty: number): Promise<StoreStock> {
+        // Si nous avons une référence au StoreRepository, l'utiliser
+        if (this.storeRepository) {
+            return await this.storeRepository.decrementStoreStock(storeId, productId, qty);
+        }
+        
+        // Sinon, utiliser la logique de stock central global (fallback)
         const stock = this.centralStock.find(s => s.productId === productId);
         if (!stock) throw new Error(`Central stock not found for product ${productId}`);
         
@@ -51,7 +59,7 @@ export class MockLogisticsRepository implements ILogisticsRepository {
         
         return {
             id: Math.floor(Math.random() * 1000),
-            storeId: 1, // Mock logistics store ID
+            storeId: storeId,
             productId,
             quantity: stock.stock,
         } as StoreStock;

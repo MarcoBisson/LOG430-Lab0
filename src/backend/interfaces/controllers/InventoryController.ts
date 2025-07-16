@@ -6,12 +6,13 @@ import type { AuthenticatedRequest } from '../middlewares/authentificateJWT';
 import { UserRole } from '@prisma/client';
 import { PrismaUserRepository } from '../../infrastructure/prisma/PrismaUserRepository';
 import { errorResponse } from '../../utils/errorResponse';
+import { createControllerLogger } from '../../utils/logger';
 
 const logisticsRepository = new PrismaLogisticsRepository();
 const storeRepository = new PrismaStoreRepository();
 const userRepository = new PrismaUserRepository();
 const inventoryService = new InventoryService(logisticsRepository, storeRepository);
-
+const log = createControllerLogger('InventoryController');
 export class InventoryController {
     /**
      * Récupère le stock central.
@@ -24,8 +25,10 @@ export class InventoryController {
             const page = query.page ? parseInt(query.page as string) : undefined;
             const limit = query.limit ? parseInt(query.limit as string) : undefined;
             const { products, total } = await inventoryService.getCentralStock(page, limit);
+            log.info('GetCentralStock successfull', { products: products.length, total, page, limit });
             res.json({ products, total });
         } else {
+            log.warn(`Access Unauthorized for ${req.user?.username} (${req.user?.role})`);
             errorResponse(res, 401, 'Unauthorized', 'Acces Unauthorized', req.originalUrl);
         }
     }
@@ -43,11 +46,14 @@ export class InventoryController {
 
             if (access.find( store => store.id === storeId)){
                 const storeStock = await inventoryService.getStoreStock(storeId);
+                log.info(`GetStoreStock for store ${storeId} successfull`, {storeStock});
                 res.json(storeStock);
             } else {
+                log.warn(`Access Unauthorized for ${req.user.username} (${req.user.role})`);
                 errorResponse(res, 401, 'Unauthorized', 'Acces Unauthorized', req.originalUrl);
             }
         } else {
+            log.warn('Invalid token');
             errorResponse(res, 403, 'Forbidden', 'Invalid token', req.originalUrl);
         }
     }

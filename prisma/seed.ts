@@ -107,7 +107,7 @@ async function main() {
         storeStocks.push({
             storeId: saleStores[randomInt(saleStores.length)].id,
             productId: ob.id,
-            quantity: randomInt(10, 100),
+            quantity: randomInt(50, 100),
         });
 
         storeStocks.push({

@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import type { IProductRepository } from '../../domain/repositories/IProductRepository';
 import type { Product, ProductStock } from '../../domain/entities/Product';
-
-const prisma = new PrismaClient();
+import { prisma } from './PrismaClient';
 
 export class PrismaProductRepository implements IProductRepository {
     async createProduct(
