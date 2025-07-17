@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  auth-service:
+    build: .
+    ports:
+      - "3036:3036"
+    environment:
+      - NODE_ENV=development
+      - PORT=3036
+      - DATABASE_URL=postgresql://auth_user:auth_password@auth-db:5432/auth_db
+      - JWT_SECRET=your_super_secret_jwt_key_here
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - auth-network
+
+  auth-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=auth_user
+      - POSTGRES_PASSWORD=auth_password
+      - POSTGRES_DB=auth_db
+    ports:
+      - "5433:5432"  # Port différent pour éviter les conflits
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - auth-network
+
+  # Optionnel: Interface d'administration pour PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - auth-db
+    networks:
+      - auth-network
+
+volumes:
+  auth_db_data:
+
+networks:
+  auth-network:
+    driver: bridge

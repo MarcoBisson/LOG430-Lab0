@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      UserRole @default(CLIENT)
+  storeId   Int?     // Magasin principal de l'utilisateur (optionnel)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations avec les magasins auxquels l'utilisateur a accès
+  access    Store[]  @relation("UserStoreAccess")
+
+  @@map("users")
+}
+
+model Store {
+  id          Int       @id @default(autoincrement())
+  name        String
+  address     String
+  type        StoreType
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations avec les utilisateurs qui ont accès à ce magasin
+  users       User[]    @relation("UserStoreAccess")
+
+  @@map("stores")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  isRevoked Boolean  @default(false)
+
+  @@map("sessions")
+}
+
+enum UserRole {
+  CLIENT
+  ADMIN
+  STAFF
+  LOGISTICS
+}
+
+
+enum StoreType {
+  SALES
+  LOGISTICS
+  HEADQUARTER
+}

@@ -1,7 +1,7 @@
-import type { User } from '@prisma/client';
+import type { UserDTO } from '../DTOs/UserDTO';
 import { API_BASE } from '../config/api';
 
-export async function getToken(username:string, password: string): Promise<{user: User, token:string}> {
+export async function getToken(username:string, password: string): Promise<{user: UserDTO, token:string}> {
     const response = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -1,0 +1,130 @@
+# Configuration dynamique pour Traefik
+# Middlewares pour l'authentification, les headers et le rate limiting
+
+http:
+  middlewares:
+    # Middleware pour vérifier les clés API
+    api-key-check:
+      headers:
+        customRequestHeaders:
+          X-API-Gateway: "traefik-gateway"
+          X-Request-ID: "{{ generateUUID }}"
+        customResponseHeaders:
+          X-Gateway-Version: "1.0.0"
+          X-Powered-By: "Traefik-Gateway"
+
+    # Middleware pour l'authentification JWT (forward auth)
+    jwt-auth:
+      forwardAuth:
+        address: "http://auth-service:3031/api/auth/verify"
+        authResponseHeaders:
+          - "X-User-ID"
+          - "X-User-Role"
+          - "X-User-Access"
+        authRequestHeaders:
+          - "Authorization"
+          - "X-API-Key"
+
+    # Headers pour le service d'authentification
+    auth-headers:
+      headers:
+        customRequestHeaders:
+          X-Service: "auth-service"
+          X-Version: "1.0.0"
+        customResponseHeaders:
+          X-Auth-Service: "active"
+          Access-Control-Allow-Origin: "*"
+          Access-Control-Allow-Methods: "GET,POST,PUT,DELETE,OPTIONS"
+          Access-Control-Allow-Headers: "Content-Type,Authorization,X-API-Key"
+
+    # Headers pour le service store
+    store-headers:
+      headers:
+        customRequestHeaders:
+          X-Service: "store-service"
+          X-Version: "1.0.0"
+        customResponseHeaders:
+          X-Store-Service: "active"
+          Access-Control-Allow-Origin: "*"
+          Access-Control-Allow-Methods: "GET,POST,PUT,DELETE,OPTIONS"
+          Access-Control-Allow-Headers: "Content-Type,Authorization,X-API-Key"
+
+    # Rate limiting
+    rate-limit:
+      rateLimit:
+        burst: 100
+        average: 50
+        period: "1m"
+        sourcecriterion:
+          ipStrategy:
+            depth: 1
+
+    # Middleware pour l'authentification par clé API
+    api-key-auth:
+      headers:
+        customRequestHeaders:
+          X-API-Key-Required: "true"
+      errors:
+        status:
+          - "401"
+        query: "/api/auth/validate-key"
+        service: "auth-service"
+
+    # Middleware pour le logging centralisé
+    request-logging:
+      accessLog:
+        format: json
+        fields:
+          defaultMode: keep
+          names:
+            ClientUsername: drop
+          headers:
+            defaultMode: keep
+            names:
+              Authorization: drop
+              X-API-Key: drop
+
+    # Middleware pour la compression
+    compression:
+      compress: {}
+
+    # Middleware pour la sécurité
+    security-headers:
+      headers:
+        customResponseHeaders:
+          X-Content-Type-Options: "nosniff"
+          X-Frame-Options: "DENY"
+          X-XSS-Protection: "1; mode=block"
+          Strict-Transport-Security: "max-age=31536000; includeSubDomains"
+          Referrer-Policy: "strict-origin-when-cross-origin"
+
+    # Circuit breaker
+    circuit-breaker:
+      circuitBreaker:
+        expression: "NetworkErrorRatio() > 0.3 || ResponseCodeRatio(500, 600, 0, 600) > 0.3"
+        checkPeriod: "10s"
+        fallbackDuration: "30s"
+        recoveryDuration: "10s"
+
+  # Services externes pour l'authentification
+  services:
+    auth-validator:
+      loadBalancer:
+        servers:
+          - url: "http://auth-service:3031"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+          timeout: "5s"
+
+# Configuration TLS pour HTTPS (optionnel)
+tls:
+  options:
+    default:
+      sslProtocols:
+        - "TLSv1.2"
+        - "TLSv1.3"
+      cipherSuites:
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
+        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"

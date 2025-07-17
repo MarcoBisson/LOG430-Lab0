@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  store-service:
+    build: .
+    ports:
+      - "3032:3032"
+    environment:
+      - NODE_ENV=development
+      - PORT=3032
+      - DATABASE_URL=postgresql://store_user:store_password@store-db:5432/store_db
+    depends_on:
+      store-db:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - store-network
+
+  store-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=store_user
+      - POSTGRES_PASSWORD=store_password
+      - POSTGRES_DB=store_db
+    ports:
+      - "5434:5432"  # Port différent pour éviter les conflits
+    volumes:
+      - store_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U store_user -d store_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - store-network
+
+  # Optionnel: Interface d'administration pour PostgreSQL
+  pgadmin-store:
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=store@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5051:80"
+    depends_on:
+      - store-db
+    networks:
+      - store-network
+
+volumes:
+  store_db_data:
+
+networks:
+  store-network:
+    driver: bridge

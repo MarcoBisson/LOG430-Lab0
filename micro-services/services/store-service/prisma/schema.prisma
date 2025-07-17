@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Store {
+  id        Int       @id @default(autoincrement())
+  name      String
+  address   String
+  type      StoreType
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  // Relations avec les stocks de produits
+  storeStocks StoreStock[]
+
+  @@map("stores")
+}
+
+model StoreStock {
+  id        Int @id @default(autoincrement())
+  storeId   Int
+  productId Int
+  quantity  Int @default(0)
+  
+  // Relations
+  store     Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  
+  @@unique([storeId, productId])
+  @@map("store_stocks")
+}
+
+enum StoreType {
+  SALES
+  LOGISTICS
+  HEADQUARTER
+}

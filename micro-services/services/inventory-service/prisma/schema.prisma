@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  name        String
+  price       Float
+  description String?
+  category    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relations
+  storeStocks StoreStock[]
+  
+  @@map("products")
+}
+
+model StoreStock {
+  id        Int     @id @default(autoincrement())
+  storeId   Int
+  productId Int
+  quantity  Int     @default(0)
+  
+  // Relations
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // Contrainte d'unicité : un produit ne peut avoir qu'un seul stock par magasin
+  @@unique([storeId, productId])
+  @@map("store_stocks")
+}

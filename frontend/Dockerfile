@@ -2,14 +2,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+# Copier package.json
+COPY frontend/package*.json ./
 
-COPY src/frontend/ ./
+# Installer les dépendances
+RUN npm ci
 
-RUN npm install --legacy-peer-deps
+# Copier le code source
+COPY frontend/ ./
 
-RUN npm run build:frontend
+# Build l'application
+RUN npm run build
 
+# Servir avec un serveur simple
 EXPOSE 5173
-
-CMD ["npm", "run", "start:frontend"]
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "5173"]
