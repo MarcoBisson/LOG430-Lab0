@@ -20,32 +20,26 @@ services:
     environment:
       REDIS_REPLICATION_MODE: master
 
-  # NGINX Load Balancer avec cache Redis
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
+  # Traefik API Gateway
+  traefik:
+    image: traefik:v3.0
+    container_name: log430-lab0-traefik
+    restart: unless-stopped
     ports:
       - '80:80'
-    depends_on:
-      redis:
-        condition: service_healthy
-      frontend:
-        condition: service_started
-      inventory-service:
-        condition: service_started
-      sales-service:
-        condition: service_started
-      store-service:
-        condition: service_started
-      user-service:
-        condition: service_started
-    restart: unless-stopped
+      - '443:443'
+      - '8080:8080'  # Dashboard
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/logs:/var/log/nginx
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - ./logs:/var/log/traefik
     networks:
       - app-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
 
   frontend:
     build:
@@ -63,11 +57,16 @@ services:
     restart: unless-stopped
     networks:
       - app-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`localhost`) && !PathPrefix(`/api`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
 
   # Inventory Microservice
   inventory-service:
     build:
-      context: ./micro-services/services/inventory-service
+      context: ./micro-services/inventory-service
       dockerfile: Dockerfile
     depends_on:
       inventory-postgres:
@@ -79,6 +78,12 @@ services:
     restart: unless-stopped
     networks:
       - app-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.inventory.rule=Host(`localhost`) && PathPrefix(`/api/products`)"
+      - "traefik.http.routers.inventory.entrypoints=web"
+      - "traefik.http.routers.inventory.middlewares=api-key-check,rate-limit,compression"
+      - "traefik.http.services.inventory.loadbalancer.server.port=3033"
 
   # Inventory Database
   inventory-postgres:
@@ -100,7 +105,7 @@ services:
   # Sales Microservice  
   sales-service:
     build:
-      context: ./micro-services/services/sales-service
+      context: ./micro-services/sales-service
       dockerfile: Dockerfile
     depends_on:
       sales-postgres:
@@ -112,6 +117,12 @@ services:
     restart: unless-stopped
     networks:
       - app-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sales.rule=Host(`localhost`) && (PathPrefix(`/api/sales`) || PathPrefix(`/api/returns`))"
+      - "traefik.http.routers.sales.entrypoints=web"
+      - "traefik.http.routers.sales.middlewares=api-key-check,rate-limit,compression"
+      - "traefik.http.services.sales.loadbalancer.server.port=3034"
 
   # Sales Database
   sales-postgres:
@@ -133,7 +144,7 @@ services:
   # Store Microservice
   store-service:
     build:
-      context: ./micro-services/services/store-service
+      context: ./micro-services/store-service
       dockerfile: Dockerfile
     depends_on:
       store-postgres:
@@ -145,6 +156,12 @@ services:
     restart: unless-stopped
     networks:
       - app-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.store.rule=Host(`localhost`) && (PathPrefix(`/api/stores`) || PathPrefix(`/api/stock`))"
+      - "traefik.http.routers.store.entrypoints=web"
+      - "traefik.http.routers.store.middlewares=store-headers"
+      - "traefik.http.services.store.loadbalancer.server.port=3035"
 
   # Store Database
   store-postgres:
@@ -166,7 +183,7 @@ services:
   # User Microservice
   user-service:
     build:
-      context: ./micro-services/services/user-service
+      context: ./micro-services/user-service
       dockerfile: Dockerfile
     depends_on:
       user-postgres:
@@ -178,6 +195,16 @@ services:
     restart: unless-stopped
     networks:
       - app-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.user.rule=Host(`localhost`) && (PathPrefix(`/api/auth`) || PathPrefix(`/api/users`))"
+      - "traefik.http.routers.user.entrypoints=web"
+      - "traefik.http.services.user.loadbalancer.server.port=3036"
+      - "traefik.http.routers.user-docs.rule=Host(`localhost`) && PathPrefix(`/docs/user`)"
+      - "traefik.http.routers.user-docs.entrypoints=web"
+      - "traefik.http.routers.user-docs.middlewares=user-docs-stripprefix"
+      - "traefik.http.routers.user-docs.service=user"
+      - "traefik.http.middlewares.user-docs-stripprefix.stripprefix.prefixes=/docs/user"
 
   # User Database
   user-postgres:
